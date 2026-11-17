@@ -31,7 +31,7 @@ The pinned upstream loader has not yet been browser-tested with this callback. T
 - TLS validation and certificate policy are browser-managed in CheerpJ. `HttpsConnection.getSecurityInfo()` currently returns `null`; Java ME certificate metadata is not synthesized.
 - TCP maps Java ME socket streams and the five standard socket options to `java.net.Socket`.
 - UDP preserves packet boundaries and binary data using `DatagramPacket`. The adapter supports client-style destinations and local port binding with `datagram://:port`.
-- The upstream GCF `DatagramConnection.send/receive` signatures do not declare checked exceptions. Adapter I/O failures are surfaced as `IllegalStateException`; verify game-specific error handling.
+- The pinned upstream `InputConnection`/`OutputConnection` stream-opening methods and `DatagramConnection.send/receive` signatures do not declare checked exceptions. Adapter I/O failures at those boundaries are surfaced as `IllegalStateException`; verify game-specific error handling.
 - Connection notifiers/server sockets, push registry, SMS, Bluetooth, multicast/broadcast, vendor APIs, and nonstandard URL schemes remain unsupported.
 - Browser networking, Tailscale ACLs, remote server policy, and the runtime's exact loader version can affect behavior.
 
