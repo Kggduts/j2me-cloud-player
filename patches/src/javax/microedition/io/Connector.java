@@ -9,6 +9,8 @@ package javax.microedition.io;
 
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.FilterInputStream;
+import java.io.FilterOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -31,7 +33,17 @@ public class Connector {
             connection.close();
             throw new IOException("Connection does not support input streams");
         }
-        return ((InputConnection) connection).openInputStream();
+        try {
+            final InputStream stream = ((InputConnection) connection).openInputStream();
+            return new FilterInputStream(stream) {
+                public void close() throws IOException {
+                    try { super.close(); } finally { connection.close(); }
+                }
+            };
+        } catch (IOException e) {
+            connection.close();
+            throw e;
+        }
     }
 
     public static DataInputStream openDataInputStream(String name) throws IOException {
@@ -63,6 +75,16 @@ public class Connector {
             connection.close();
             throw new IOException("Connection does not support output streams");
         }
-        return ((OutputConnection) connection).openOutputStream();
+        try {
+            final OutputStream stream = ((OutputConnection) connection).openOutputStream();
+            return new FilterOutputStream(stream) {
+                public void close() throws IOException {
+                    try { super.close(); } finally { connection.close(); }
+                }
+            };
+        } catch (IOException e) {
+            connection.close();
+            throw e;
+        }
     }
 }
