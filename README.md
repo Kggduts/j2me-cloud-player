@@ -32,7 +32,7 @@ No universal compatibility claim is made. Vendor APIs, device-specific extension
 - Project landing page: available under `site/`.
 - Browser HTTP(S) diagnostic: available under `site/netprobe/`.
 - Static quality workflow: `.github/workflows/quality.yml`.
-- FreeJ2ME emulator integration: not yet present in this repository.
+- Pinned FreeJ2ME Web source and reproducible build workflow: configured; first successful CI build pending.
 - MIDP GCF networking: not implemented.
 - TCP/UDP: not enabled; CheerpJ/Tailscale integration remains under evaluation.
 
@@ -46,7 +46,7 @@ Run the static checks with Node.js installed:
 bash scripts/check-project.sh
 ```
 
-Serve the static project locally from the `site/` directory using an HTTP server. The emulator itself is not included yet.
+Serve the static project locally from the `site/` directory using an HTTP server. The emulator source is fetched at a pinned upstream revision during CI; the resulting deployable site is published as a build artifact, not committed into this repository.
 
 See:
 
