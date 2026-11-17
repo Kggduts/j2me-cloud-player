@@ -10,7 +10,8 @@ Build output: `dist/netprobe-midlet.jar`, assembled by
 
 The project overlays the pinned upstream `Connector` implementation with
 HTTP(S), TCP socket and UDP datagram adapters. The build also runs
-`GcfAdapterSmokeTest` on a normal JVM against the same controlled server.
+`GcfAdapterSmokeTest` on a normal JVM against the same controlled server. That
+smoke test additionally covers `serversocket://` accept and binary streams.
 That JVM test checks adapter mapping, but does not verify CheerpJ's browser
 networking path. Run this MIDlet in the browser emulator to perform that
 separate check.
