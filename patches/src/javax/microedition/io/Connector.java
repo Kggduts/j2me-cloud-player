@@ -33,17 +33,12 @@ public class Connector {
             connection.close();
             throw new IOException("Connection does not support input streams");
         }
-        try {
-            final InputStream stream = ((InputConnection) connection).openInputStream();
-            return new FilterInputStream(stream) {
-                public void close() throws IOException {
-                    try { super.close(); } finally { connection.close(); }
-                }
-            };
-        } catch (IOException e) {
-            connection.close();
-            throw e;
-        }
+        final InputStream stream = ((InputConnection) connection).openInputStream();
+        return new FilterInputStream(stream) {
+            public void close() throws IOException {
+                try { super.close(); } finally { connection.close(); }
+            }
+        };
     }
 
     public static DataInputStream openDataInputStream(String name) throws IOException {
@@ -75,16 +70,11 @@ public class Connector {
             connection.close();
             throw new IOException("Connection does not support output streams");
         }
-        try {
-            final OutputStream stream = ((OutputConnection) connection).openOutputStream();
-            return new FilterOutputStream(stream) {
-                public void close() throws IOException {
-                    try { super.close(); } finally { connection.close(); }
-                }
-            };
-        } catch (IOException e) {
-            connection.close();
-            throw e;
-        }
+        final OutputStream stream = ((OutputConnection) connection).openOutputStream();
+        return new FilterOutputStream(stream) {
+            public void close() throws IOException {
+                try { super.close(); } finally { connection.close(); }
+            }
+        };
     }
 }
