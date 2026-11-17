@@ -8,11 +8,6 @@ IMAGE="j2me-cloud-player/freej2me-builder"
 
 cd "$ROOT"
 
-if ! command -v docker >/dev/null 2>&1; then
-  echo "Docker is required. See the upstream FreeJ2ME Web build instructions." >&2
-  exit 1
-fi
-
 if [ ! -d "$UPSTREAM/.git" ]; then
   echo "Missing upstream checkout at $UPSTREAM." >&2
   exit 1
@@ -29,8 +24,15 @@ fi
 python3 "$ROOT/scripts/apply-upstream-patches.py" "$UPSTREAM"
 rm -rf "$UPSTREAM/build" "$UPSTREAM/web/freej2me-web.jar"
 
-docker build --build-arg UID=1000 -t "$IMAGE" "$UPSTREAM/builder_image"
-docker run --rm -w /app -v "$UPSTREAM:/app" "$IMAGE" ant
+if command -v ant >/dev/null 2>&1; then
+  (cd "$UPSTREAM" && ant)
+elif command -v docker >/dev/null 2>&1; then
+  docker build --build-arg UID=1000 -t "$IMAGE" "$UPSTREAM/builder_image"
+  docker run --rm -w /app -v "$UPSTREAM:/app" "$IMAGE" ant
+else
+  echo "Install Ant and a JDK, or install Docker to use the upstream builder image." >&2
+  exit 1
+fi
 
 test -s "$UPSTREAM/web/freej2me-web.jar"
 bash "$ROOT/tools/run-gcf-adapter-tests.sh" "$UPSTREAM/web/freej2me-web.jar"
