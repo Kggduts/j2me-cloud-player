@@ -27,6 +27,7 @@ See [Network compatibility](docs/network-compatibility.md) and [Security model](
 ## Current implementation status
 
 - Project landing page and browser HTTP(S) diagnostic: `site/`.
+- Mobile player keypad: numeric keys, soft keys, directional pad, OK, and a dedicated Backspace/Delete button; touch input uses pointer events for multi-touch support.
 - Local controlled HTTP/TCP/UDP echo server: `tools/netprobe-server.py`.
 - Java SE baseline smoke test: `tools/java-probe/`.
 - Java ME GCF adapter overlay: `patches/src/javax/microedition/io/`.
