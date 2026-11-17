@@ -31,6 +31,12 @@ jobs:
         with:
           node-version: 22
 
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -38,6 +44,9 @@ jobs:
 
       - name: Run network probe server tests
         run: python -m unittest discover -s tools -p 'test_*.py' -v
+
+      - name: Run Java SE network probe tests
+        run: bash tools/run-java-probe-tests.sh
 
       - name: Run static checks
         run: bash scripts/check-project.sh
