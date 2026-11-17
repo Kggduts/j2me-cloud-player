@@ -15,6 +15,7 @@ cleanup() {
   rm -rf "$TMP"
 }
 trap cleanup EXIT
+mkdir -p "$TMP/classes"
 python3 "$ROOT/tools/netprobe-server.py" --host 127.0.0.1 \
   --http-port 18765 --tcp-port 18766 --udp-port 18767 >"$TMP/server.log" 2>&1 &
 SERVER_PID=$!
