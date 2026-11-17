@@ -6,6 +6,7 @@ import javax.microedition.io.HttpConnection;
 import javax.microedition.io.StreamConnection;
 import javax.microedition.io.Datagram;
 import javax.microedition.io.DatagramConnection;
+import javax.microedition.io.ServerSocketConnection;
 
 /** Runs the project's GCF adapters on a normal JVM against the loopback probe server. */
 public final class GcfAdapterSmokeTest {
@@ -21,7 +22,8 @@ public final class GcfAdapterSmokeTest {
         testHttp(host, http);
         testTcp(host, tcp);
         testUdp(host, udp);
-        System.out.println("PASS: GCF HTTP, TCP and UDP adapter smoke tests");
+        testServerSocket();
+        System.out.println("PASS: GCF HTTP, TCP, UDP and server-socket adapter smoke tests");
     }
 
     private static void testHttp(String host, int port) throws Exception {
@@ -76,6 +78,56 @@ public final class GcfAdapterSmokeTest {
         require(Arrays.equals(DATA, received), "GCF UDP DataInput/DataOutput binary datagram");
         connection.close();
         System.out.println("PASS: GCF UDP binary datagram");
+    }
+
+    private static void testServerSocket() throws Exception {
+        final ServerSocketConnection listener = (ServerSocketConnection) Connector.open(
+            "serversocket://127.0.0.1:18768", Connector.READ_WRITE, true);
+        final Throwable[] serverFailure = new Throwable[1];
+        Thread server = new Thread(new Runnable() {
+            public void run() {
+                StreamConnection accepted = null;
+                try {
+                    accepted = listener.acceptAndOpen();
+                    InputStream in = accepted.openInputStream();
+                    OutputStream out = accepted.openOutputStream();
+                    byte[] received = new byte[DATA.length];
+                    int offset = 0;
+                    while (offset < received.length) {
+                        int count = in.read(received, offset, received.length - offset);
+                        if (count < 0) throw new AssertionError("Accepted socket closed early");
+                        offset += count;
+                    }
+                    if (!Arrays.equals(DATA, received)) throw new AssertionError("Server socket received incorrect bytes");
+                    out.write(received);
+                    out.flush();
+                } catch (Throwable error) {
+                    serverFailure[0] = error;
+                } finally {
+                    if (accepted != null) accepted.close();
+                }
+            }
+        });
+        server.start();
+
+        java.net.Socket client = new java.net.Socket("127.0.0.1", listener.getLocalPort());
+        client.setSoTimeout(3000);
+        client.getOutputStream().write(DATA);
+        client.getOutputStream().flush();
+        byte[] echoed = new byte[DATA.length];
+        int offset = 0;
+        while (offset < echoed.length) {
+            int count = client.getInputStream().read(echoed, offset, echoed.length - offset);
+            if (count < 0) throw new AssertionError("Server socket closed before echo completed");
+            offset += count;
+        }
+        require(Arrays.equals(DATA, echoed), "GCF server-socket binary echo");
+        client.close();
+        server.join(3000);
+        listener.close();
+        if (server.isAlive()) throw new AssertionError("Server socket accept worker did not finish");
+        if (serverFailure[0] != null) throw new AssertionError("GCF server socket failed: " + serverFailure[0]);
+        System.out.println("PASS: GCF server-socket accept and binary stream");
     }
 
     private static void drain(InputStream in) throws Exception {
