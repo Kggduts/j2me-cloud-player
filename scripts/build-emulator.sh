@@ -57,7 +57,7 @@ cat > "$ROOT/dist/BUILD-INFO.txt" <<EOF
 J2ME Cloud Player build
 FreeJ2ME Web commit: $PINNED_COMMIT
 The emulator is provided under its upstream license.
-GCF HTTP, TCP and UDP adapters are included; browser and real-game compatibility remain unverified.
+GCF HTTP(S), TCP client/server and UDP adapters are included; browser and real-game compatibility remain unverified.
 EOF
 
 echo "Built deployable site into $ROOT/dist"
