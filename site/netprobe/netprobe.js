@@ -58,9 +58,22 @@ runButton.addEventListener("click", async () => {
     });
 
     let byteLength = 0;
-    if (method !== "HEAD") {
-      const body = await response.arrayBuffer();
-      byteLength = body.byteLength;
+    const maxBytes = 5 * 1024 * 1024;
+    if (method !== "HEAD" && response.body) {
+      const reader = response.body.getReader();
+      try {
+        while (true) {
+          const part = await reader.read();
+          if (part.done) break;
+          byteLength += part.value.byteLength;
+          if (byteLength > maxBytes) {
+            await reader.cancel("Response exceeds the 5 MiB diagnostic limit.");
+            throw new Error("Response exceeded the 5 MiB diagnostic limit; the remaining body was cancelled.");
+          }
+        }
+      } finally {
+        reader.releaseLock();
+      }
     }
 
     byId("final-url").textContent = response.url || url.href;
