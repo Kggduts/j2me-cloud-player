@@ -45,7 +45,7 @@ cp -a "$UPSTREAM/web/." "$ROOT/dist/emulator/"
 cp "$UPSTREAM/LICENSE" "$ROOT/dist/emulator/UPSTREAM-LICENSE"
 cp "$UPSTREAM/README.md" "$ROOT/dist/emulator/UPSTREAM-README.md"
 jar cfm "$ROOT/dist/netprobe-midlet.jar" "$ROOT/tools/java-me-probe/MANIFEST.MF" \
-  -C "$PROBE_CLASSES" GcfNetworkProbe.class
+  -C "$PROBE_CLASSES" .
 
 cat > "$ROOT/dist/BUILD-INFO.txt" <<EOF
 J2ME Cloud Player build
