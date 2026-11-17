@@ -33,6 +33,7 @@ docker build --build-arg UID=1000 -t "$IMAGE" "$UPSTREAM/builder_image"
 docker run --rm -w /app -v "$UPSTREAM:/app" "$IMAGE" ant
 
 test -s "$UPSTREAM/web/freej2me-web.jar"
+bash "$ROOT/tools/run-gcf-adapter-tests.sh" "$UPSTREAM/web/freej2me-web.jar"
 
 # Build a real MIDlet probe against the pinned upstream Java ME API classes.
 PROBE_CLASSES="$(mktemp -d)"
