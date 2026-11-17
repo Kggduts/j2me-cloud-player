@@ -1,23 +1,42 @@
 # MIDlet GCF network probe
 
 This MIDlet tests the actual `javax.microedition.io` API exposed by the
-patched emulator. Enter the host/IP of the machine running
-`tools/netprobe-server.py` and its HTTP, TCP and UDP ports, then run the
-three checks.
+patched emulator. It reports each stage as it runs, then records the target
+host, port, protocol, elapsed time and exception text for HTTP, TCP and UDP.
+A timeout is reported separately for the protocol that did not answer.
+
+## Test through your Tailscale network
+
+Run the echo server on the VPS or another machine that is already in your
+tailnet. Bind it only to that machine's Tailscale IPv4 address:
+
+```sh
+python3 tools/netprobe-server.py --host 100.x.y.z
+```
+
+On Windows, use `py -3` instead of `python3`. Replace `100.x.y.z` with
+the server machine's actual Tailscale IPv4 address. Keep the server private:
+the echo endpoints have no authentication and must not be exposed to the
+public internet. Allow the three ports only from the intended tailnet device
+using your Tailscale ACL/grants and host firewall.
 
 Build output: `dist/netprobe-midlet.jar`, assembled by
-`scripts/build-emulator.sh`.
+`scripts/build-emulator.sh`. The deployed site exposes it at
+`/netprobe-midlet.jar`; open the Network Test Lab page to download it.
+
+Enter the VPS Tailscale IPv4 address and the default HTTP/TCP/UDP ports
+8765/8766/8767, then run the MIDlet in the browser emulator after signing in
+to Tailscale through CheerpJ. This tests the emulator's own GCF API path to
+that tailnet peer. It does not by itself prove that a public game server is
+reachable through an exit node.
 
 The project overlays the pinned upstream `Connector` implementation with
 HTTP(S), TCP socket and UDP datagram adapters. The build also runs
-`GcfAdapterSmokeTest` on a normal JVM against the same controlled server. That
-smoke test additionally covers `serversocket://` accept and binary streams.
-That JVM test checks adapter mapping, but does not verify CheerpJ's browser
-networking path. Run this MIDlet in the browser emulator to perform that
-separate check.
+`GcfAdapterSmokeTest` on a normal JVM against the same controlled server.
+That JVM smoke test checks adapter mapping, but does not verify CheerpJ's
+browser networking path. A successful in-browser MIDlet test is the required
+next signal before diagnosing a real game.
 
 For TCP/UDP in CheerpJ, use the emulator's interactive Tailscale sign-in link
-and a tailnet ACL that allows only the intended test destination. The pinned
-loader's login flow still requires browser verification. Use a controlled
-private test network; never expose the unauthenticated echo server to the
-public internet.
+and a tailnet ACL that allows only the intended test destination. Never put a
+reusable Tailscale auth key in the public site.
