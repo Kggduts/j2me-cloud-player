@@ -31,6 +31,12 @@ docker run --rm -w /app -v "$UPSTREAM:/app" "$IMAGE" ant
 
 test -s "$UPSTREAM/web/freej2me-web.jar"
 
+# Build a real MIDlet probe against the pinned upstream Java ME API classes.
+PROBE_CLASSES="$(mktemp -d)"
+trap 'rm -rf "$PROBE_CLASSES"' EXIT
+javac -source 8 -target 8 -classpath "$UPSTREAM/web/freej2me-web.jar" \
+  -d "$PROBE_CLASSES" "$ROOT/tools/java-me-probe/GcfNetworkProbe.java"
+
 rm -rf "$ROOT/dist"
 mkdir -p "$ROOT/dist"
 cp -a "$ROOT/site/." "$ROOT/dist/"
@@ -38,6 +44,8 @@ mkdir -p "$ROOT/dist/emulator"
 cp -a "$UPSTREAM/web/." "$ROOT/dist/emulator/"
 cp "$UPSTREAM/LICENSE" "$ROOT/dist/emulator/UPSTREAM-LICENSE"
 cp "$UPSTREAM/README.md" "$ROOT/dist/emulator/UPSTREAM-README.md"
+jar cfm "$ROOT/dist/netprobe-midlet.jar" "$ROOT/tools/java-me-probe/MANIFEST.MF" \
+  -C "$PROBE_CLASSES" GcfNetworkProbe.class
 
 cat > "$ROOT/dist/BUILD-INFO.txt" <<EOF
 J2ME Cloud Player build
