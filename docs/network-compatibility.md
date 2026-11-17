@@ -59,6 +59,12 @@ Before implementing a transport, prove the selected runtime's bridge behavior fo
 
 Do not implement a blocking Java API by synchronously waiting on the browser main thread.
 
+## Current probe evidence
+
+- `tools/java-probe/NetworkProbe.java` is a Java SE client for the local HTTP/TCP/UDP echo server.
+- `tools/run-java-probe-tests.sh` compiles and runs it against loopback endpoints.
+- This checks ordinary Java SE `java.net` behavior only. It is not a MIDlet, does not exercise `javax.microedition.io`, and is not evidence of CheerpJ browser networking.
+
 ## Compatibility test matrix
 
 | Area | Required checks |
