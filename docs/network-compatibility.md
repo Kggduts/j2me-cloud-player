@@ -61,9 +61,10 @@ Do not implement a blocking Java API by synchronously waiting on the browser mai
 
 ## Current probe evidence
 
-- `tools/java-probe/NetworkProbe.java` is a Java SE client for the local HTTP/TCP/UDP echo server.
-- `tools/run-java-probe-tests.sh` compiles and runs it against loopback endpoints.
-- This checks ordinary Java SE `java.net` behavior only. It is not a MIDlet, does not exercise `javax.microedition.io`, and is not evidence of CheerpJ browser networking.
+- `tools/java-probe/NetworkProbe.java` is a Java SE client for the local HTTP/TCP/UDP echo server. `tools/run-java-probe-tests.sh` compiles and runs it against loopback endpoints. This checks ordinary Java SE `java.net` behavior only.
+- `tools/java-me-probe/GcfNetworkProbe.java` is a separate MIDlet that calls the upstream `javax.microedition.io.Connector` APIs for HTTP, TCP and UDP. The build packages it as `dist/netprobe-midlet.jar` so it can be run inside the emulator.
+- The GCF MIDlet is a diagnostic, not an implementation. The pinned upstream `Connector.open()` currently rejects HTTP, socket and datagram schemes, so those tests are expected to fail until adapters are added.
+- Neither probe is evidence of CheerpJ browser networking or real-world game compatibility. A browser run against the controlled test server is still required.
 
 ## Compatibility test matrix
 
