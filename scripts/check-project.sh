@@ -23,6 +23,10 @@ test -s patches/src/javax/microedition/io/Connector.java
 test -s scripts/apply-upstream-patches.py
 grep -Fq 'run.html?app=' scripts/apply-upstream-patches.py
 grep -Fq '&mobile=1' scripts/apply-upstream-patches.py
+grep -Fq 'Testing TCP ' tools/java-me-probe/GcfNetworkProbe.java
+grep -Fq 'TCP ' tools/java-me-probe/GcfNetworkProbe.java
+grep -Fq 'UDP ' tools/java-me-probe/GcfNetworkProbe.java
+grep -Fq 'elapsed(started)' tools/java-me-probe/GcfNetworkProbe.java
 
 node --check site/netprobe/netprobe.js
 bash -n scripts/build-emulator.sh
