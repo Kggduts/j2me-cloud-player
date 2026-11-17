@@ -128,9 +128,9 @@ class TCPEchoHandler(socketserver.BaseRequestHandler):
 
 class UDPEchoHandler(socketserver.BaseRequestHandler):
     def handle(self) -> None:
-        data, peer = self.request
+        data, sock = self.request
         if len(data) <= 65507:
-            self.request[1].sendto(data, peer)
+            sock.sendto(data, self.client_address)
 
 
 def main() -> None:
