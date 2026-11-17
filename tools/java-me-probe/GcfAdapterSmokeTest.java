@@ -3,7 +3,6 @@ import java.io.OutputStream;
 import java.util.Arrays;
 import javax.microedition.io.Connector;
 import javax.microedition.io.HttpConnection;
-import javax.microedition.io.HttpConnection;
 import javax.microedition.io.StreamConnection;
 import javax.microedition.io.Datagram;
 import javax.microedition.io.DatagramConnection;
