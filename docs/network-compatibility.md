@@ -11,6 +11,7 @@ The overlay replaces `Connector.open()` routing and adds GCF adapters backed by 
 | `http://` | `HttpConnection` | `HttpURLConnection` / browser Fetch in CheerpJ | Source added; JVM smoke test added; build/browser run pending |
 | `https://` | `HttpsConnection` | `HttpsURLConnection` / browser Fetch in CheerpJ | Source added; browser TLS test pending |
 | `socket://` | `SocketConnection` | `java.net.Socket` | Source added; JVM smoke test added; CheerpJ/Tailscale test pending |
+| `serversocket://` | `ServerSocketConnection` | `java.net.ServerSocket` | Source added; JVM accept/stream smoke test added; CheerpJ/Tailscale test pending |
 | `datagram://` | `DatagramConnection` | `java.net.DatagramSocket` | Source added; JVM smoke test added; CheerpJ/Tailscale test pending |
 | `sms://` | Existing upstream placeholder | Simulated implementation | Not a real SMS transport |
 | Other schemes | None | — | Unsupported |
@@ -32,7 +33,7 @@ The pinned upstream loader has not yet been browser-tested with this callback. T
 - TCP maps Java ME socket streams and the five standard socket options to `java.net.Socket`.
 - UDP preserves packet boundaries and binary data using `DatagramPacket`. The adapter supports client-style destinations and local port binding with `datagram://:port`.
 - The pinned upstream `InputConnection`/`OutputConnection` stream-opening methods and `DatagramConnection.send/receive` signatures do not declare checked exceptions. Adapter I/O failures at those boundaries are surfaced as `IllegalStateException`; verify game-specific error handling.
-- Connection notifiers/server sockets, push registry, SMS, Bluetooth, multicast/broadcast, vendor APIs, and nonstandard URL schemes remain unsupported.
+- Push registry, SMS, Bluetooth, multicast/broadcast, vendor APIs, and nonstandard URL schemes remain unsupported.
 - Browser networking, Tailscale ACLs, remote server policy, and the runtime's exact loader version can affect behavior.
 
 ## Reproducible build and tests
@@ -50,7 +51,7 @@ The JVM smoke test verifies adapter mapping and byte preservation; it does not p
 | --- | --- |
 | HTTP | GET, POST, headers, status codes, redirects, binary body, CORS denial, timeout |
 | HTTPS | valid TLS, invalid certificate behavior, redirects, CORS, certificate metadata |
-| TCP | connect, bidirectional binary stream, partial reads, ordering, timeout, remote close, reconnect, concurrent clients |
+| TCP | client connect, server-socket accept, bidirectional binary stream, partial reads, ordering, timeout, remote close, reconnect, concurrent clients |
 | UDP | datagram boundaries, binary payload, packet limits, timeout, local bind, unreachable destination |
 | Lifecycle | explicit close, MIDlet exit, page refresh, network loss, server restart |
 | Security | interactive sign-in, tailnet ACLs, no shared keys, least-privilege destinations |
