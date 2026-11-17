@@ -17,7 +17,7 @@ Early development. The project now contains a source overlay for Java ME Generic
 ## Network design
 
 - HTTP/HTTPS adapters use Java URL connection APIs and CheerpJ's browser Fetch path. CORS and browser TLS/origin policies apply.
-- TCP/UDP adapters use Java `Socket` and `DatagramSocket`. In CheerpJ, generalized networking requires Tailscale (or a supported custom backend).
+- TCP client/server and UDP adapters use Java `Socket`, `ServerSocket`, and `DatagramSocket`. In CheerpJ, generalized networking requires Tailscale (or a supported custom backend).
 - The emulator page has an interactive Tailscale login callback; no reusable auth key is shipped in public assets.
 - Users need a tailnet route and ACL that allow the destination game server. A public player does not automatically gain access to arbitrary private networks.
 - Server sockets, push registry, real SMS, Bluetooth, multicast/broadcast, vendor APIs, and universal game compatibility are not claimed.
