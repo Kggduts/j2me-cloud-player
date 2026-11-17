@@ -1,42 +1,57 @@
 # Runtime evaluation: CheerpJ and network access
 
-## Current findings from official documentation
+## Findings from official documentation
 
 The current CheerpJ documentation describes:
 
-- A full OpenJDK class library for supported Java versions.
 - HTTP and HTTPS through the browser networking stack, subject to same-origin and CORS rules.
 - TCP and UDP through a Tailscale-based networking path, or a custom networking backend in enterprise deployments.
-- Tailscale traffic carried over WebSockets, with a relay and control server that can be self-hosted; Headscale is mentioned as a self-hostable control-server option.
+- Tailscale networking carried over WebSockets, with an interactive login callback available instead of embedding an auth key.
+- A full OpenJDK class library for the supported Java versions.
 
 Sources:
 
+- https://cheerpj.com/docs/guides/Networking.html
 - https://cheerpj.com/docs/explanation/architecture
-- https://cheerpj.com/docs/faq
 - https://cheerpj.com/docs/tutorials/serverclient
 - https://cheerpj.com/compatibility/
 
-## Important distinction
+## Pinned upstream runtime
 
-The pinned upstream revision uses the loader URL `https://cjrtnc.leaningtech.com/20260317_2978/loader.js`. The current CheerpJ documentation describes TCP/UDP through Tailscale, but I cannot verify from the loader URL alone that every documented networking option is available and supported in this exact runtime build. The runtime/networking API must be tested in-browser before integration.
+The pinned FreeJ2ME Web revision uses:
 
-## Evaluation plan
+`https://cjrtnc.leaningtech.com/20260317_2978/loader.js`
 
-1. Map the pinned loader build to the currently documented CheerpJ release.
-2. Verify that `tailscaleLoginUrlCb` and the documented networking options work in that exact loader build.
-3. Build a minimal Java SE socket probe independent of FreeJ2ME.
-4. Verify HTTP(S) behavior and CORS constraints.
-5. Verify TCP and UDP through the documented Tailscale path using a controlled test network.
-6. Test whether the selected runtime can execute the FreeJ2ME build and required Java ME APIs.
-7. Test Java ME GCF behavior separately; Java SE socket support does not automatically implement `javax.microedition.io.Connector`.
-8. Review authentication, ephemeral credentials, network isolation, relay costs, and abuse limits before exposing network access to arbitrary uploaded JARs.
+The documentation currently describes CheerpJ 5.x networking capabilities. I cannot verify from the loader URL alone that every documented option is available in this exact runtime build. The exact loader and browser behavior still require direct testing.
+
+## Project implementation
+
+The project now contains a build-time overlay for Java ME GCF:
+
+- `Connector.open("http://...")` and `https://...` map to Java URL connection APIs.
+- `Connector.open("socket://...")` maps to `java.net.Socket`.
+- `Connector.open("datagram://...")` maps to `java.net.DatagramSocket`.
+- The emulator bootstrap adds `tailscaleLoginUrlCb` and a visible login link without a reusable client-side auth key.
+- A JVM smoke test exercises HTTP GET/POST, TCP binary streams, and UDP datagram DataInput/DataOutput behavior against a controlled local echo server.
+
+This is source-level integration plus an automated JVM test path. It is not yet browser-verified. CheerpJ's official documentation describes the transport path, but the pinned loader must still prove the same behavior.
+
+## Remaining evaluation
+
+1. Verify `tailscaleLoginUrlCb` and `tailscaleIpCb` with the pinned loader.
+2. Run the GCF MIDlet in a supported desktop and mobile browser.
+3. Verify HTTP(S) CORS, redirects, response status handling, and TLS behavior.
+4. Verify TCP and UDP through a controlled Tailscale network.
+5. Test multiple connections, reconnect, timeout, page refresh, and MIDlet shutdown.
+6. Test real MIDlets/games using each claimed transport.
+7. Review authentication, ephemeral device enrollment, network ACLs, relay costs, and abuse limits before exposing networking to arbitrary uploaded JARs.
 
 ## Provisional direction
 
-Prefer the official CheerpJ networking path over inventing a raw-socket bridge, if the required runtime version, deployment model, terms, and compatibility tests permit it.
+Use the documented CheerpJ networking path rather than inventing a raw-socket bridge, subject to exact-loader compatibility, deployment model, terms, and repeatable tests.
 
-Do not embed a long-lived Tailscale auth key in public client-side JavaScript. Authentication and device enrollment must be designed as a security boundary, not treated as a configuration detail.
+Do not embed a long-lived Tailscale auth key in public client-side JavaScript. Authentication and device enrollment remain a security boundary.
 
 ## Decision status
 
-**Not selected yet.** Runtime compatibility with the existing FreeJ2ME Web code and the exact availability/terms of networking features remain unverified by execution.
+**Implementation in source; browser verification pending.** No universal J2ME game compatibility claim is made.
