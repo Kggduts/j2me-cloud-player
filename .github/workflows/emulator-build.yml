@@ -1,0 +1,46 @@
+name: Emulator build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build FreeJ2ME Web
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out project
+        uses: actions/checkout@v4
+
+      - name: Check out pinned upstream
+        uses: actions/checkout@v4
+        with:
+          repository: zb3/freej2me-web
+          ref: c19416e75cbc15f9a27f7e967ee81cb108761e30
+          path: vendor/freej2me-web
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Run static checks
+        run: bash scripts/check-project.sh
+
+      - name: Build emulator and assemble site
+        run: bash scripts/build-emulator.sh
+
+      - name: Upload deployable site
+        uses: actions/upload-artifact@v4
+        with:
+          name: j2me-cloud-player-site
+          path: dist/
+          if-no-files-found: error
+          retention-days: 14
