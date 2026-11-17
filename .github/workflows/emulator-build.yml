@@ -41,8 +41,10 @@ jobs:
           distribution: temurin
           java-version: '8'
 
-      - name: Install Ant
-        run: sudo apt-get update && sudo apt-get install -y ant
+      - name: Verify Ant
+        run: |
+          if ! command -v ant >/dev/null 2>&1; then sudo apt-get install -y ant; fi
+          ant -version
 
       - name: Set up Python
         uses: actions/setup-python@v5
