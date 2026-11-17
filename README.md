@@ -31,6 +31,7 @@ No universal compatibility claim is made. Vendor APIs, device-specific extension
 
 - Project landing page: available under `site/`.
 - Browser HTTP(S) diagnostic: available under `site/netprobe/`.
+- Local HTTP/TCP/UDP echo server and automated tests: available under `tools/`.
 - Static quality workflow: `.github/workflows/quality.yml`.
 - Pinned FreeJ2ME Web source and reproducible build workflow: configured; first successful CI build pending.
 - MIDP GCF networking: not implemented.
