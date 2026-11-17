@@ -52,7 +52,7 @@ Run the Java SE baseline test:
 bash tools/run-java-probe-tests.sh
 ```
 
-The complete emulator build expects the pinned upstream checkout at `vendor/freej2me-web`, Docker, Python 3, a JDK, and Ant inside the upstream builder image:
+The complete emulator build expects the pinned upstream checkout at `vendor/freej2me-web`, Docker, Python 3, a JDK, and Ant inside the upstream builder image. It applies the adapter overlay and automatically runs GCF adapter smoke tests:
 
 ```sh
 bash scripts/build-emulator.sh
