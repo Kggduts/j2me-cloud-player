@@ -21,6 +21,8 @@ test -s tools/java-me-probe/GcfAdapterSmokeTest.java
 test -s patches/src/javax/microedition/io/GcfNetwork.java
 test -s patches/src/javax/microedition/io/Connector.java
 test -s scripts/apply-upstream-patches.py
+grep -Fq 'run.html?app=' scripts/apply-upstream-patches.py
+grep -Fq '&mobile=1' scripts/apply-upstream-patches.py
 
 node --check site/netprobe/netprobe.js
 bash -n scripts/build-emulator.sh
