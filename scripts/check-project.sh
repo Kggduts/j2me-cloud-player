@@ -18,6 +18,7 @@ test -s docs/runtime-evaluation.md
 
 node --check site/netprobe/netprobe.js
 bash -n scripts/build-emulator.sh
+bash -n tools/run-java-probe-tests.sh
 
 if grep -R -nE '(tailscaleAuthKey|AuthKey[a-zA-Z0-9_-]{10,})' site; then
   echo "Possible Tailscale auth key found in public site files." >&2
