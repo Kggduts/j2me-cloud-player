@@ -32,6 +32,7 @@ No universal compatibility claim is made. Vendor APIs, device-specific extension
 - Project landing page: available under `site/`.
 - Browser HTTP(S) diagnostic: available under `site/netprobe/`.
 - Local HTTP/TCP/UDP echo server and automated tests: available under `tools/`.
+- Java SE HTTP/TCP/UDP smoke-test client: `tools/java-probe/` (not a MIDlet/GCF test).
 - Static quality workflow: `.github/workflows/quality.yml`.
 - Pinned FreeJ2ME Web source and reproducible build workflow: configured; first successful CI build pending.
 - MIDP GCF networking: not implemented.
@@ -41,10 +42,16 @@ The browser diagnostic measures Fetch behavior only. It is not a J2ME networking
 
 ## Development
 
-Run the static checks with Node.js installed:
+Run static checks with Node.js installed:
 
 ```sh
 bash scripts/check-project.sh
+```
+
+Run Java SE transport smoke tests with a JDK and Python 3:
+
+```sh
+bash tools/run-java-probe-tests.sh
 ```
 
 Serve the static project locally from the `site/` directory using an HTTP server. The emulator source is fetched at a pinned upstream revision during CI; the resulting deployable site is published as a build artifact, not committed into this repository.
@@ -55,6 +62,7 @@ See:
 - [Runtime evaluation](docs/runtime-evaluation.md)
 - [Security model](docs/security-model.md)
 - [MIDlet network probe specification](web/netprobe/README.md)
+- [Java SE transport probe](tools/java-probe/README.md)
 - [Project landing page](site/index.html)
 - [Browser HTTP(S) diagnostic](site/netprobe/index.html)
 
