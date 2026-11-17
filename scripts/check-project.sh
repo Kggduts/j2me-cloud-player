@@ -15,6 +15,8 @@ test -s site/netprobe/index.html
 test -s site/netprobe/netprobe.js
 test -s docs/network-compatibility.md
 test -s docs/runtime-evaluation.md
+test -s tools/java-probe/NetworkProbe.java
+test -s tools/java-me-probe/GcfNetworkProbe.java
 
 node --check site/netprobe/netprobe.js
 bash -n scripts/build-emulator.sh
