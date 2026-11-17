@@ -4,7 +4,7 @@ A browser-based J2ME (MIDP/CLDC) player built around the FreeJ2ME Web emulator.
 
 ## Project status
 
-Early development. The project now contains a source overlay for Java ME Generic Connection Framework (GCF) HTTP(S), TCP client/server, and UDP adapters. The clean build and browser runtime have not yet been confirmed, so these transports remain experimental.
+Early development. The project contains a source overlay for Java ME Generic Connection Framework (GCF) HTTP(S), TCP client/server, and UDP adapters. The pinned upstream build and automated JVM smoke tests pass in GitHub Actions. Browser runtime and real-game compatibility have not yet been confirmed, so browser transports remain experimental.
 
 ## Goals
 
@@ -34,7 +34,8 @@ See [Network compatibility](docs/network-compatibility.md) and [Security model](
 - GCF adapter JVM smoke test: `tools/run-gcf-adapter-tests.sh`.
 - GCF diagnostic MIDlet: `tools/java-me-probe/`; packaged as `dist/netprobe-midlet.jar`.
 - Static checks and reproducible emulator build: `.github/workflows/`.
-- Build, browser networking, and real-game compatibility: pending verification.
+- Reproducible emulator build and JVM adapter tests: verified in GitHub Actions (latest successful run: [Emulator build #83](https://github.com/Kggduts/j2me-cloud-player/actions/runs/44144865200)).
+- Browser networking, Tailscale login, and real-game compatibility: pending verification.
 
 The browser Fetch diagnostic is not a GCF or TCP/UDP test. The GCF JVM test is not a browser runtime test.
 
@@ -58,7 +59,7 @@ The complete emulator build expects the pinned upstream checkout at `vendor/free
 bash scripts/build-emulator.sh
 ```
 
-The build applies the GCF overlay, compiles FreeJ2ME, runs the GCF adapter smoke tests, packages the diagnostic MIDlet, and creates a deployable site under `dist/`. It has not yet been browser-tested; the deployment host must support HTTP Range requests.
+The build applies the GCF overlay, compiles FreeJ2ME, runs the GCF adapter smoke tests, packages the diagnostic MIDlet, and creates a deployable site under `dist/`. This pipeline has passed on GitHub Actions. The resulting site has not yet been browser-tested; the deployment host must support HTTP Range requests.
 
 ## Upstream and licensing
 
