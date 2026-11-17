@@ -40,7 +40,7 @@ final class GcfNetwork {
         if (lower.startsWith("https://")) return new GcfHttpsConnection(name, mode, timeouts);
         if (lower.startsWith("serversocket://")) return new GcfServerSocketConnection(name, timeouts);
         if (lower.startsWith("socket://")) return new GcfSocketConnection(name, mode, timeouts);
-        if (lower.startsWith("datagram://")) return new GcfDatagramConnection(name, mode);
+        if (lower.startsWith("datagram://")) return new GcfDatagramConnection(name, mode, timeouts);
         throw new ConnectionNotFoundException("Unsupported protocol: " + name);
     }
 
@@ -322,12 +322,13 @@ final class GcfNetwork {
         private final int mode;
         private volatile boolean closed;
 
-        GcfDatagramConnection(String address, int mode) throws IOException {
+        GcfDatagramConnection(String address, int mode, boolean timeouts) throws IOException {
             Endpoint endpoint = endpoint(address, "datagram");
             defaultAddress = endpoint.host.length() == 0 ? null : endpoint.asDatagramAddress();
             this.mode = mode;
             if (endpoint.host.length() == 0) socket = new DatagramSocket(endpoint.port);
             else socket = new DatagramSocket();
+            if (timeouts) socket.setSoTimeout(DEFAULT_TIMEOUT_MS);
         }
         public int getMaximumLength() { return 65507; }
         public int getNominalLength() { return 1472; }
@@ -444,6 +445,7 @@ final class GcfNetwork {
             resetInput();
         }
         public void setLength(int len) {
+            syncOutput();
             if (len < 0 || offset + len > buffer.length) throw new IllegalArgumentException("Invalid datagram length");
             length = len;
             outputBytes = new ByteArrayOutputStream();
