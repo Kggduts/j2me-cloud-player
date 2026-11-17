@@ -111,26 +111,30 @@ final class GcfNetwork {
             if (closed) throw new IOException("Connection is closed");
         }
 
-        public synchronized InputStream openInputStream() throws IOException {
-            ensureOpen();
-            if ((mode & Connector.READ) == 0) throw new IOException("Connection is not readable");
-            if (input == null) input = connection.getInputStream();
-            return input;
+        public synchronized InputStream openInputStream() {
+            try {
+                ensureOpen();
+                if ((mode & Connector.READ) == 0) throw new IOException("Connection is not readable");
+                if (input == null) input = connection.getInputStream();
+                return input;
+            } catch (IOException e) { throw new IllegalStateException(e.toString()); }
         }
 
-        public synchronized DataInputStream openDataInputStream() throws IOException {
+        public synchronized DataInputStream openDataInputStream() {
             return new DataInputStream(openInputStream());
         }
 
-        public synchronized OutputStream openOutputStream() throws IOException {
-            ensureOpen();
-            if ((mode & Connector.WRITE) == 0) throw new IOException("Connection is not writable");
-            connection.setDoOutput(true);
-            if (output == null) output = connection.getOutputStream();
-            return output;
+        public synchronized OutputStream openOutputStream() {
+            try {
+                ensureOpen();
+                if ((mode & Connector.WRITE) == 0) throw new IOException("Connection is not writable");
+                connection.setDoOutput(true);
+                if (output == null) output = connection.getOutputStream();
+                return output;
+            } catch (IOException e) { throw new IllegalStateException(e.toString()); }
         }
 
-        public synchronized DataOutputStream openDataOutputStream() throws IOException {
+        public synchronized DataOutputStream openDataOutputStream() {
             return new DataOutputStream(openOutputStream());
         }
 
@@ -210,22 +214,26 @@ final class GcfNetwork {
         private void ensureOpen() throws IOException {
             if (closed || socket.isClosed()) throw new IOException("Connection is closed");
         }
-        public synchronized InputStream openInputStream() throws IOException {
-            ensureOpen();
-            if ((mode & Connector.READ) == 0) throw new IOException("Connection is not readable");
-            if (input == null) input = socket.getInputStream();
-            return input;
+        public synchronized InputStream openInputStream() {
+            try {
+                ensureOpen();
+                if ((mode & Connector.READ) == 0) throw new IOException("Connection is not readable");
+                if (input == null) input = socket.getInputStream();
+                return input;
+            } catch (IOException e) { throw new IllegalStateException(e.toString()); }
         }
-        public synchronized DataInputStream openDataInputStream() throws IOException {
+        public synchronized DataInputStream openDataInputStream() {
             return new DataInputStream(openInputStream());
         }
-        public synchronized OutputStream openOutputStream() throws IOException {
-            ensureOpen();
-            if ((mode & Connector.WRITE) == 0) throw new IOException("Connection is not writable");
-            if (output == null) output = socket.getOutputStream();
-            return output;
+        public synchronized OutputStream openOutputStream() {
+            try {
+                ensureOpen();
+                if ((mode & Connector.WRITE) == 0) throw new IOException("Connection is not writable");
+                if (output == null) output = socket.getOutputStream();
+                return output;
+            } catch (IOException e) { throw new IllegalStateException(e.toString()); }
         }
-        public synchronized DataOutputStream openDataOutputStream() throws IOException {
+        public synchronized DataOutputStream openDataOutputStream() {
             return new DataOutputStream(openOutputStream());
         }
         public synchronized void close() {
