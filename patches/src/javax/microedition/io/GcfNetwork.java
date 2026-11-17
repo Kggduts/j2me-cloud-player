@@ -21,10 +21,7 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.URL;
 import java.net.URLConnection;
-import java.net.ProtocolException;
 import java.net.SocketException;
-import java.net.UnknownHostException;
-import java.util.Arrays;
 
 /** Package-private factory and Java ME GCF transport implementations. */
 final class GcfNetwork {
@@ -41,7 +38,7 @@ final class GcfNetwork {
         if (lower.startsWith("http://")) return new GcfHttpConnection(name, mode, timeouts);
         if (lower.startsWith("https://")) return new GcfHttpsConnection(name, mode, timeouts);
         if (lower.startsWith("socket://")) return new GcfSocketConnection(name, mode, timeouts);
-        if (lower.startsWith("datagram://")) return new GcfDatagramConnection(name);
+        if (lower.startsWith("datagram://")) return new GcfDatagramConnection(name, mode);
         throw new ConnectionNotFoundException("Unsupported protocol: " + name);
     }
 
@@ -269,11 +266,13 @@ final class GcfNetwork {
     private static final class GcfDatagramConnection implements DatagramConnection {
         private final DatagramSocket socket;
         private final String defaultAddress;
+        private final int mode;
         private boolean closed;
 
-        GcfDatagramConnection(String address) throws IOException {
+        GcfDatagramConnection(String address, int mode) throws IOException {
             Endpoint endpoint = endpoint(address, "datagram");
             defaultAddress = endpoint.host.length() == 0 ? null : endpoint.asDatagramAddress();
+            this.mode = mode;
             if (endpoint.host.length() == 0) socket = new DatagramSocket(endpoint.port);
             else socket = new DatagramSocket();
         }
@@ -300,6 +299,7 @@ final class GcfNetwork {
         public synchronized void send(Datagram datagram) {
             try {
                 ensureOpen();
+                if ((mode & Connector.WRITE) == 0) throw new IOException("Connection is not writable");
                 if (!(datagram instanceof GcfDatagram)) throw new IOException("Datagram was not created by this implementation");
                 GcfDatagram data = (GcfDatagram) datagram;
                 String address = data.getAddress();
@@ -315,6 +315,7 @@ final class GcfNetwork {
         public synchronized void receive(Datagram datagram) {
             try {
                 ensureOpen();
+                if ((mode & Connector.READ) == 0) throw new IOException("Connection is not readable");
                 if (!(datagram instanceof GcfDatagram)) throw new IOException("Datagram was not created by this implementation");
                 GcfDatagram data = (GcfDatagram) datagram;
                 byte[] bytes = data.getData();
