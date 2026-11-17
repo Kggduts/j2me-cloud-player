@@ -39,7 +39,10 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '17'
+          java-version: '8'
+
+      - name: Install Ant
+        run: sudo apt-get update && sudo apt-get install -y ant
 
       - name: Set up Python
         uses: actions/setup-python@v5
