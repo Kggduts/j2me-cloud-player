@@ -4,74 +4,71 @@ A browser-based J2ME (MIDP/CLDC) player built around the FreeJ2ME Web emulator.
 
 ## Project status
 
-Early development. The repository is being initialized around a compatibility-first approach. Network support is not yet implemented or certified.
+Early development. The project now contains a source overlay for Java ME Generic Connection Framework (GCF) HTTP(S), TCP, and UDP adapters. The clean build and browser runtime have not yet been confirmed, so these transports remain experimental.
 
 ## Goals
 
 - Run MIDP games in a modern browser without a native Android/desktop installation.
-- Preserve the upstream emulator core where practical instead of rewriting it.
-- Build a J2ME Generic Connection Framework (GCF) compatibility layer.
-- Validate HTTP, HTTPS, TCP, and UDP independently before presenting them as supported.
-- Keep game files local to the browser session unless the user explicitly exports or stores them.
+- Preserve the upstream emulator core and pin the exact source revision.
+- Implement Java ME GCF networking over CheerpJ's documented Java networking paths.
+- Validate HTTP, HTTPS, TCP, and UDP independently before calling them compatible.
+- Keep game files local to browser storage unless the user explicitly exports them.
 
-## Compatibility policy
+## Network design
 
-A game is not considered network-compatible merely because the browser can make a request. J2ME games expect Java ME connection semantics, including stream behavior, binary payloads, status codes, timeouts, and connection lifecycle.
+- HTTP/HTTPS adapters use Java URL connection APIs and CheerpJ's browser Fetch path. CORS and browser TLS/origin policies apply.
+- TCP/UDP adapters use Java `Socket` and `DatagramSocket`. In CheerpJ, generalized networking requires Tailscale (or a supported custom backend).
+- The emulator page has an interactive Tailscale login callback; no reusable auth key is shipped in public assets.
+- Users need a tailnet route and ACL that allow the destination game server. A public player does not automatically gain access to arbitrary private networks.
+- Server sockets, push registry, real SMS, Bluetooth, multicast/broadcast, vendor APIs, and universal game compatibility are not claimed.
 
-Browser security limits matter:
-
-- HTTP(S) requests are subject to CORS, mixed-content, and browser-origin rules.
-- Browser JavaScript does not expose arbitrary raw TCP or UDP sockets.
-- WebSocket is not a transparent replacement for arbitrary TCP or UDP.
-- TCP/UDP support therefore requires a separately designed and deployed gateway/runtime backend. It must be tested against real MIDlets before being advertised.
-
-No universal compatibility claim is made. Vendor APIs, device-specific extensions, SMS, Bluetooth, push registry, multicast, and server-side listening may require separate implementations or remain unsupported.
+See [Network compatibility](docs/network-compatibility.md) and [Security model](docs/security-model.md).
 
 ## Current implementation status
 
-- Project landing page: available under `site/`.
-- Browser HTTP(S) diagnostic: available under `site/netprobe/`.
-- Local HTTP/TCP/UDP echo server and automated tests: available under `tools/`.
-- Java SE HTTP/TCP/UDP smoke-test client: `tools/java-probe/` (not a MIDlet/GCF test).
-- Java ME GCF diagnostic MIDlet source: `tools/java-me-probe/`; packaged as `dist/netprobe-midlet.jar` during the emulator build.
-- Static quality workflow: `.github/workflows/quality.yml`.
-- Pinned FreeJ2ME Web source and reproducible build workflow: configured; first successful CI build pending.
-- MIDP GCF networking: not implemented.
-- TCP/UDP: not enabled; CheerpJ/Tailscale integration remains under evaluation.
+- Project landing page and browser HTTP(S) diagnostic: `site/`.
+- Local controlled HTTP/TCP/UDP echo server: `tools/netprobe-server.py`.
+- Java SE baseline smoke test: `tools/java-probe/`.
+- Java ME GCF adapter overlay: `patches/src/javax/microedition/io/`.
+- Upstream patcher: `scripts/apply-upstream-patches.py` (refuses an unexpected upstream revision).
+- GCF adapter JVM smoke test: `tools/run-gcf-adapter-tests.sh`.
+- GCF diagnostic MIDlet: `tools/java-me-probe/`; packaged as `dist/netprobe-midlet.jar`.
+- Static checks and reproducible emulator build: `.github/workflows/`.
+- Build, browser networking, and real-game compatibility: pending verification.
 
-The browser diagnostic measures Fetch behavior only. It is not a J2ME networking test and does not demonstrate raw TCP/UDP support.
+The browser Fetch diagnostic is not a GCF or TCP/UDP test. The GCF JVM test is not a browser runtime test.
 
 ## Development
 
-Run static checks with Node.js installed:
+Run static checks:
 
 ```sh
 bash scripts/check-project.sh
 ```
 
-Run Java SE transport smoke tests with a JDK and Python 3:
+Run the Java SE baseline test:
 
 ```sh
 bash tools/run-java-probe-tests.sh
 ```
 
-Serve the static project locally from the `site/` directory using an HTTP server. The emulator source is fetched at a pinned upstream revision during CI; the resulting deployable site is published as a build artifact, not committed into this repository.
+The complete emulator build expects the pinned upstream checkout at `vendor/freej2me-web`, Docker, Python 3, a JDK, and Ant inside the upstream builder image:
 
-See:
+```sh
+bash scripts/build-emulator.sh
+```
+
+The build applies the GCF overlay, compiles FreeJ2ME, runs the GCF adapter smoke tests, packages the diagnostic MIDlet, and creates a deployable site under `dist/`. It has not yet been browser-tested; the deployment host must support HTTP Range requests.
+
+## Upstream and licensing
+
+The emulator baseline is [zb3/freej2me-web](https://github.com/zb3/freej2me-web), pinned in the build script. Preserve its license and notices. The overlay is intended to be distributed under GPL-3.0-or-later with the upstream project; verify all notices before publishing binaries.
+
+## Project links
 
 - [Network compatibility design](docs/network-compatibility.md)
 - [Runtime evaluation](docs/runtime-evaluation.md)
 - [Security model](docs/security-model.md)
-- [MIDlet network probe specification](web/netprobe/README.md)
-- [Java SE transport probe](tools/java-probe/README.md)
 - [Java ME GCF probe](tools/java-me-probe/README.md)
-- [Project landing page](site/index.html)
+- [Java SE transport probe](tools/java-probe/README.md)
 - [Browser HTTP(S) diagnostic](site/netprobe/index.html)
-
-## Upstream
-
-The emulator baseline is [zb3/freej2me-web](https://github.com/zb3/freej2me-web). Review its license and preserve required notices when importing or modifying upstream code.
-
-## License
-
-Project-specific licensing and upstream license notices must be finalized before distribution.
