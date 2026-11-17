@@ -24,9 +24,12 @@ Build output: `dist/netprobe-midlet.jar`, assembled by
 `scripts/build-emulator.sh`. The deployed site exposes it at
 `/netprobe-midlet.jar`; open the Network Test Lab page to download it.
 
-Enter the VPS Tailscale IPv4 address and the default HTTP/TCP/UDP ports
-8765/8766/8767, then run the MIDlet in the browser emulator after signing in
-to Tailscale through CheerpJ. This tests the emulator's own GCF API path to
+The MIDlet now starts with the VPS Tailscale IPv4 address `100.81.186.89`.
+It no longer depends on typing into a Java ME TextField: choose a digit or `.`
+from the on-screen character picker and press **Insert**; use **Delete** to
+remove the last character, or **Use VPS IP** to restore the preset. The default
+HTTP/TCP/UDP ports are 8765/8766/8767. Run the MIDlet in the browser emulator
+after signing in to Tailscale through CheerpJ. This tests the emulator's own GCF API path to
 that tailnet peer. It does not by itself prove that a public game server is
 reachable through an exit node.
 
