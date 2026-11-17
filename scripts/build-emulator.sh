@@ -26,6 +26,9 @@ if [ "$ACTUAL_COMMIT" != "$PINNED_COMMIT" ]; then
   exit 1
 fi
 
+python3 "$ROOT/scripts/apply-upstream-patches.py" "$UPSTREAM"
+rm -rf "$UPSTREAM/build" "$UPSTREAM/web/freej2me-web.jar"
+
 docker build --build-arg UID=1000 -t "$IMAGE" "$UPSTREAM/builder_image"
 docker run --rm -w /app -v "$UPSTREAM:/app" "$IMAGE" ant
 
