@@ -31,6 +31,14 @@ jobs:
         with:
           node-version: 22
 
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Run network probe server tests
+        run: python -m unittest discover -s tools -p 'test_*.py' -v
+
       - name: Run static checks
         run: bash scripts/check-project.sh
 
