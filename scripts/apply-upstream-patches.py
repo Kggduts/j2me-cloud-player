@@ -48,6 +48,22 @@ if marker not in js:
     js = js.replace(needle, replacement, 1)
     main_js.write_text(js, encoding="utf-8")
 
+# The upstream launcher links to an extensionless "run" path. Static hosting
+# serves run.html, not /run, so installed games otherwise open a 404 page.
+launcher_js = upstream / "web" / "src" / "launcher.js"
+launcher = launcher_js.read_text(encoding="utf-8")
+launcher_replacements = {
+    'link.href = "run?app=" + game.appId;':
+        'link.href = "run.html?app=" + encodeURIComponent(game.appId);',
+    'link.href = "run?app=" + game.appId + "&mobile=1";':
+        'link.href = "run.html?app=" + encodeURIComponent(game.appId) + "&mobile=1";',
+}
+for old, new in launcher_replacements.items():
+    if old not in launcher:
+        raise SystemExit("Expected installed-game route not found in upstream launcher.js: " + old)
+    launcher = launcher.replace(old, new, 1)
+launcher_js.write_text(launcher, encoding="utf-8")
+
 run_html = upstream / "web" / "run.html"
 html = run_html.read_text(encoding="utf-8")
 html_marker = '<!-- J2ME Cloud Player: optional private-network sign-in -->'
