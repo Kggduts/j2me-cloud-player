@@ -164,10 +164,19 @@ final class GcfNetwork {
         public String getRef() { return url.getRef(); }
         public String getRequestMethod() { return connection.getRequestMethod(); }
         public String getRequestProperty(String key) { return connection.getRequestProperty(key); }
-        public int getResponseCode() throws IOException { ensureOpen(); return connection.getResponseCode(); }
-        public String getResponseMessage() throws IOException { ensureOpen(); return connection.getResponseMessage(); }
+        public int getResponseCode() {
+            try { ensureOpen(); return connection.getResponseCode(); }
+            catch (IOException e) { throw new IllegalStateException(e.toString()); }
+        }
+        public String getResponseMessage() {
+            try { ensureOpen(); return connection.getResponseMessage(); }
+            catch (IOException e) { throw new IllegalStateException(e.toString()); }
+        }
         public String getURL() { return url.toExternalForm(); }
-        public void setRequestMethod(String method) throws IOException { ensureOpen(); connection.setRequestMethod(method); }
+        public void setRequestMethod(String method) {
+            try { ensureOpen(); connection.setRequestMethod(method); }
+            catch (IOException e) { throw new IllegalStateException(e.toString()); }
+        }
         public void setRequestProperty(String key, String value) { connection.setRequestProperty(key, value); }
     }
 
