@@ -18,7 +18,7 @@ Sources:
 
 ## Important distinction
 
-This is documentation for current CheerpJ, not proof that the older CheerpJ loader version currently pinned by upstream FreeJ2ME Web exposes the same networking features or initialization options.
+The pinned upstream revision uses the loader URL `https://cjrtnc.leaningtech.com/20260317_2978/loader.js`. The current CheerpJ documentation describes TCP/UDP through Tailscale, but I cannot verify from the loader URL alone that every documented networking option is available and supported in this exact runtime build. The runtime/networking API must be tested in-browser before integration.
 
 The upstream web bootstrap currently uses a versioned CheerpJ loader URL. Its exact version and supported options must be checked before selecting a migration path.
 
