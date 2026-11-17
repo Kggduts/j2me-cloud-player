@@ -27,12 +27,35 @@ Browser security limits matter:
 
 No universal compatibility claim is made. Vendor APIs, device-specific extensions, SMS, Bluetooth, push registry, multicast, and server-side listening may require separate implementations or remain unsupported.
 
+## Current implementation status
+
+- Project landing page: available under `site/`.
+- Browser HTTP(S) diagnostic: available under `site/netprobe/`.
+- Static quality workflow: `.github/workflows/quality.yml`.
+- FreeJ2ME emulator integration: not yet present in this repository.
+- MIDP GCF networking: not implemented.
+- TCP/UDP: not enabled; CheerpJ/Tailscale integration remains under evaluation.
+
+The browser diagnostic measures Fetch behavior only. It is not a J2ME networking test and does not demonstrate raw TCP/UDP support.
+
 ## Development
+
+Run the static checks with Node.js installed:
+
+```sh
+bash scripts/check-project.sh
+```
+
+Serve the static project locally from the `site/` directory using an HTTP server. The emulator itself is not included yet.
 
 See:
 
 - [Network compatibility design](docs/network-compatibility.md)
-- [Browser network probe](web/netprobe/README.md)
+- [Runtime evaluation](docs/runtime-evaluation.md)
+- [Security model](docs/security-model.md)
+- [MIDlet network probe specification](web/netprobe/README.md)
+- [Project landing page](site/index.html)
+- [Browser HTTP(S) diagnostic](site/netprobe/index.html)
 
 ## Upstream
 
