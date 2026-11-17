@@ -1,6 +1,21 @@
 # NetProbe
 
-NetProbe is the planned MIDlet/browser harness for measuring Java ME networking compatibility. This directory currently contains the test specification only; no executable MIDlet or endpoint has been implemented yet.
+NetProbe contains the diagnostic plan and runnable probes for Java ME
+networking compatibility.
+
+## Executable probes
+
+- `tools/java-me-probe/GcfNetworkProbe.java`: MIDlet exercising the actual
+  `javax.microedition.io` GCF API in the emulator. Packaged as
+  `dist/netprobe-midlet.jar`.
+- `tools/java-me-probe/GcfAdapterSmokeTest.java`: runs the project's GCF
+  adapters on a normal JVM against the local controlled server.
+- `tools/java-probe/NetworkProbe.java`: Java SE baseline using ordinary
+  `java.net`, not GCF.
+- `site/netprobe/`: browser Fetch diagnostic; it does not test raw sockets.
+
+The GCF overlay is in `patches/src/javax/microedition/io/` and is applied to
+the pinned FreeJ2ME Web checkout by `scripts/apply-upstream-patches.py`.
 
 ## Test principles
 
@@ -8,6 +23,7 @@ NetProbe is the planned MIDlet/browser harness for measuring Java ME networking 
 - Record browser/runtime version, emulator revision, origin, network type, and timestamp with each run.
 - Keep expected results separate from observed results.
 - Never mark a transport as supported based only on compilation or a successful JavaScript fetch.
+- Separate JVM adapter test results from browser and real-game results.
 
 ## Planned cases
 
@@ -18,14 +34,16 @@ NetProbe is the planned MIDlet/browser harness for measuring Java ME networking 
 - Redirect behavior
 - Text and binary payloads
 - Same-origin success and cross-origin CORS denial
+- Connect/read timeout and connection close
 
 ### HTTPS
 - Valid certificate
 - Invalid/expired certificate behavior
 - Redirects and CORS
 - Binary request/response
+- Java ME `SecurityInfo` behavior (currently not implemented)
 
-### TCP gateway
+### TCP
 - Connect and report connection failure
 - Bidirectional stream echo
 - Partial reads and writes
@@ -34,13 +52,15 @@ NetProbe is the planned MIDlet/browser harness for measuring Java ME networking 
 - Timeout and remote close
 - Disconnect/reconnect
 - Multiple simultaneous connections
+- Socket option mapping
 
-### UDP gateway
+### UDP
 - Datagram send/receive
 - Datagram boundary preservation
-- Binary payload integrity
+- `DataInput` / `DataOutput` payload handling
 - Packet-size limits
 - Timeout and unreachable destination
+- Local port binding and explicit destination
 
 ### Lifecycle and robustness
 - Explicit close
@@ -53,16 +73,6 @@ NetProbe is the planned MIDlet/browser harness for measuring Java ME networking 
 ## Payload sizes
 
 At minimum: 1 byte, 64 bytes, 1 KiB, 8 KiB, and a larger configurable payload. Record exact bytes sent and received; compare hashes for larger binary payloads.
-
-## Runtime comparison
-
-Evaluate independently:
-
-1. Current upstream FreeJ2ME Web runtime without a new network adapter.
-2. A newer supported CheerpJ runtime with its native networking behavior, if applicable.
-3. The selected runtime with the proposed GCF bridge/gateway.
-
-Do not assume Java SE networking support automatically means Java ME GCF compatibility.
 
 ## Result format
 
@@ -79,3 +89,10 @@ Each case should record:
 - Error/exception
 - Payload length and integrity result
 - Notes and reproducible steps
+
+## Release gate
+
+A passing JVM test is only JVM evidence. Browser-verified status requires running
+the MIDlet against a controlled endpoint in a supported browser with the pinned
+CheerpJ loader. Game-verified status requires a real MIDlet using the claimed
+transport. Do not infer universal compatibility from the diagnostic probe.
