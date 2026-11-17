@@ -20,12 +20,10 @@ Sources:
 
 The pinned upstream revision uses the loader URL `https://cjrtnc.leaningtech.com/20260317_2978/loader.js`. The current CheerpJ documentation describes TCP/UDP through Tailscale, but I cannot verify from the loader URL alone that every documented networking option is available and supported in this exact runtime build. The runtime/networking API must be tested in-browser before integration.
 
-The upstream web bootstrap currently uses a versioned CheerpJ loader URL. Its exact version and supported options must be checked before selecting a migration path.
-
 ## Evaluation plan
 
-1. Identify the exact CheerpJ version used by the upstream project.
-2. Identify the current supported CheerpJ release and its initialization/networking API.
+1. Map the pinned loader build to the currently documented CheerpJ release.
+2. Verify that `tailscaleLoginUrlCb` and the documented networking options work in that exact loader build.
 3. Build a minimal Java SE socket probe independent of FreeJ2ME.
 4. Verify HTTP(S) behavior and CORS constraints.
 5. Verify TCP and UDP through the documented Tailscale path using a controlled test network.
