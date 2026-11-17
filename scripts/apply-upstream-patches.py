@@ -178,7 +178,7 @@ html = run_html.read_text(encoding="utf-8")
 backspace_marker = '<button data-key="Backspace"'
 if backspace_marker not in html:
     needle = '            <button data-key="NumpadDivide" class="key">#</button>'
-    replacement = needle + '\\n            <button data-key="Backspace" class="key backspace-key" aria-label="Delete / Backspace">⌫<span>Xóa</span></button>'
+    replacement = needle + '\n            <button data-key="Backspace" class="key backspace-key" aria-label="Delete / Backspace">⌫<span>Xóa</span></button>'
     if needle not in html:
         raise SystemExit("Expected numeric keypad anchor not found in upstream run.html")
     html = html.replace(needle, replacement, 1)
