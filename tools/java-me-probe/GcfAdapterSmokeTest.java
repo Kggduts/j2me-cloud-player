@@ -23,7 +23,9 @@ public final class GcfAdapterSmokeTest {
         testTcp(host, tcp);
         testUdp(host, udp);
         testServerSocket();
-        System.out.println("PASS: GCF HTTP, TCP, UDP and server-socket adapter smoke tests");
+        testServerSocketCloseUnblocks();
+        testDatagramCloseUnblocks();
+        System.out.println("PASS: GCF HTTP, TCP, UDP, server-socket and close-lifecycle smoke tests");
     }
 
     private static void testHttp(String host, int port) throws Exception {
@@ -128,6 +130,48 @@ public final class GcfAdapterSmokeTest {
         if (server.isAlive()) throw new AssertionError("Server socket accept worker did not finish");
         if (serverFailure[0] != null) throw new AssertionError("GCF server socket failed: " + serverFailure[0]);
         System.out.println("PASS: GCF server-socket accept and binary stream");
+    }
+
+    private static void testServerSocketCloseUnblocks() throws Exception {
+        final ServerSocketConnection listener = (ServerSocketConnection) Connector.open(
+            "serversocket://127.0.0.1:18769", Connector.READ_WRITE, false);
+        final Throwable[] failure = new Throwable[1];
+        Thread waiter = new Thread(new Runnable() {
+            public void run() {
+                try { listener.acceptAndOpen(); }
+                catch (Throwable error) { failure[0] = error; }
+            }
+        });
+        waiter.start();
+        Thread.sleep(100);
+        listener.close();
+        waiter.join(3000);
+        if (waiter.isAlive()) throw new AssertionError("Closing server socket did not unblock accept");
+        if (!(failure[0] instanceof IllegalStateException)) {
+            throw new AssertionError("Expected closed accept to report IllegalStateException: " + failure[0]);
+        }
+        System.out.println("PASS: closing server socket unblocks accept");
+    }
+
+    private static void testDatagramCloseUnblocks() throws Exception {
+        final DatagramConnection connection = (DatagramConnection) Connector.open(
+            "datagram://:18770", Connector.READ_WRITE, false);
+        final Throwable[] failure = new Throwable[1];
+        Thread waiter = new Thread(new Runnable() {
+            public void run() {
+                try { connection.receive(connection.newDatagram(128)); }
+                catch (Throwable error) { failure[0] = error; }
+            }
+        });
+        waiter.start();
+        Thread.sleep(100);
+        connection.close();
+        waiter.join(3000);
+        if (waiter.isAlive()) throw new AssertionError("Closing datagram connection did not unblock receive");
+        if (!(failure[0] instanceof IllegalStateException)) {
+            throw new AssertionError("Expected closed receive to report IllegalStateException: " + failure[0]);
+        }
+        System.out.println("PASS: closing datagram socket unblocks receive");
     }
 
     private static void drain(InputStream in) throws Exception {
