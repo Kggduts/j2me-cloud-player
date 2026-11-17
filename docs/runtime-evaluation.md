@@ -30,6 +30,7 @@ The project now contains a build-time overlay for Java ME GCF:
 
 - `Connector.open("http://...")` and `https://...` map to Java URL connection APIs.
 - `Connector.open("socket://...")` maps to `java.net.Socket`.
+- `Connector.open("serversocket://...")` maps to `java.net.ServerSocket`.
 - `Connector.open("datagram://...")` maps to `java.net.DatagramSocket`.
 - The emulator bootstrap adds `tailscaleLoginUrlCb` and a visible login link without a reusable client-side auth key.
 - A JVM smoke test exercises HTTP GET/POST, TCP binary streams, and UDP datagram DataInput/DataOutput behavior against a controlled local echo server.
