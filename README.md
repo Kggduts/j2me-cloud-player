@@ -4,7 +4,7 @@ A browser-based J2ME (MIDP/CLDC) player built around the FreeJ2ME Web emulator.
 
 ## Project status
 
-Early development. The project now contains a source overlay for Java ME Generic Connection Framework (GCF) HTTP(S), TCP, and UDP adapters. The clean build and browser runtime have not yet been confirmed, so these transports remain experimental.
+Early development. The project now contains a source overlay for Java ME Generic Connection Framework (GCF) HTTP(S), TCP client/server, and UDP adapters. The clean build and browser runtime have not yet been confirmed, so these transports remain experimental.
 
 ## Goals
 
