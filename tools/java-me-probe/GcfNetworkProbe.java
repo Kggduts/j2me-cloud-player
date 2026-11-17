@@ -71,11 +71,14 @@ public final class GcfNetworkProbe extends MIDlet implements CommandListener {
                 return;
             }
             running = true;
-            result.setText("Running GCF tests...");
+            result.setText("Starting diagnostics for " + target + "...");
             new Thread(new Runnable() {
                 public void run() {
-                    runTests(target, hp, tp, up);
-                    running = false;
+                    try {
+                        runTests(target, hp, tp, up);
+                    } finally {
+                        running = false;
+                    }
                 }
             }).start();
         }
@@ -83,18 +86,21 @@ public final class GcfNetworkProbe extends MIDlet implements CommandListener {
 
     private void runTests(String target, int hp, int tp, int up) {
         StringBuffer log = new StringBuffer();
+        append(log, "INFO", "Target " + target);
+        publish(log, "Testing HTTP " + target + ":" + hp + "...");
         testHttp(target, hp, log);
+        publish(log, "Testing TCP " + target + ":" + tp + "...");
         testTcp(target, tp, log);
+        publish(log, "Testing UDP " + target + ":" + up + "...");
         testUdp(target, up, log);
-        final String text = log.toString();
-        Display.getDisplay(this).callSerially(new Runnable() {
-            public void run() { result.setText(text); }
-        });
+        append(log, "INFO", "All tests finished.");
+        publish(log, "Diagnostics complete.");
     }
 
     private void testHttp(String target, int port, StringBuffer log) {
         HttpConnection connection = null;
         InputStream in = null;
+        long started = System.currentTimeMillis();
         try {
             connection = (HttpConnection) Connector.open(
                 "http://" + target + ":" + port + "/health", Connector.READ, true);
@@ -102,9 +108,9 @@ public final class GcfNetworkProbe extends MIDlet implements CommandListener {
             in = connection.openInputStream();
             while (in.read() != -1) { }
             append(log, status == HttpConnection.HTTP_OK ? "PASS" : "FAIL",
-                "HTTP GET /health (" + status + ")");
+                "HTTP " + target + ":" + port + "/health (" + status + "), " + elapsed(started));
         } catch (Throwable e) {
-            append(log, "FAIL", "HTTP: " + describe(e));
+            append(log, "FAIL", "HTTP " + target + ":" + port + ": " + describe(e) + ", " + elapsed(started));
         } finally {
             close(in);
             close(connection);
@@ -115,6 +121,7 @@ public final class GcfNetworkProbe extends MIDlet implements CommandListener {
         StreamConnection connection = null;
         InputStream in = null;
         OutputStream out = null;
+        long started = System.currentTimeMillis();
         try {
             connection = (StreamConnection) Connector.open(
                 "socket://" + target + ":" + port, Connector.READ_WRITE, true);
@@ -130,9 +137,10 @@ public final class GcfNetworkProbe extends MIDlet implements CommandListener {
                 if (count < 0) throw new IOException("peer closed early");
                 offset += count;
             }
-            append(log, equal(data, received) ? "PASS" : "FAIL", "TCP binary echo");
+            append(log, equal(data, received) ? "PASS" : "FAIL",
+                "TCP " + target + ":" + port + " binary echo, " + elapsed(started));
         } catch (Throwable e) {
-            append(log, "FAIL", "TCP: " + describe(e));
+            append(log, "FAIL", "TCP " + target + ":" + port + ": " + describe(e) + ", " + elapsed(started));
         } finally {
             close(in);
             close(out);
@@ -142,6 +150,7 @@ public final class GcfNetworkProbe extends MIDlet implements CommandListener {
 
     private void testUdp(String target, int port, StringBuffer log) {
         DatagramConnection connection = null;
+        long started = System.currentTimeMillis();
         try {
             connection = (DatagramConnection) Connector.open(
                 "datagram://" + target + ":" + port, Connector.READ_WRITE, true);
@@ -153,12 +162,24 @@ public final class GcfNetworkProbe extends MIDlet implements CommandListener {
             byte[] received = new byte[response.getLength()];
             System.arraycopy(response.getData(), response.getOffset(),
                 received, 0, response.getLength());
-            append(log, equal(data, received) ? "PASS" : "FAIL", "UDP binary datagram");
+            append(log, equal(data, received) ? "PASS" : "FAIL",
+                "UDP " + target + ":" + port + " binary echo, " + elapsed(started));
         } catch (Throwable e) {
-            append(log, "FAIL", "UDP: " + describe(e));
+            append(log, "FAIL", "UDP " + target + ":" + port + ": " + describe(e) + ", " + elapsed(started));
         } finally {
             close(connection);
         }
+    }
+
+    private void publish(final StringBuffer log, final String stage) {
+        final String snapshot = stage + "\n\n" + log.toString();
+        Display.getDisplay(this).callSerially(new Runnable() {
+            public void run() { result.setText(snapshot); }
+        });
+    }
+
+    private static String elapsed(long started) {
+        return (System.currentTimeMillis() - started) + " ms";
     }
 
     private static byte[] payload() {
