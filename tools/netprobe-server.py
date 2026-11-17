@@ -101,6 +101,7 @@ class ThreadingTCPServer(socketserver.ThreadingTCPServer):
 
 class ThreadingUDPServer(socketserver.ThreadingUDPServer):
     allow_reuse_address = True
+    max_packet_size = 65507
     daemon_threads = True
 
 
