@@ -201,7 +201,7 @@ final class GcfNetwork {
     private static final class GcfServerSocketConnection implements ServerSocketConnection {
         private final ServerSocket server;
         private final boolean timeouts;
-        private boolean closed;
+        private volatile boolean closed;
 
         GcfServerSocketConnection(String address, boolean timeouts) throws IOException {
             Endpoint endpoint = endpoint(address, "serversocket");
@@ -215,7 +215,7 @@ final class GcfNetwork {
             this.timeouts = timeouts;
         }
 
-        public synchronized StreamConnection acceptAndOpen() {
+        public StreamConnection acceptAndOpen() {
             try {
                 if (closed || server.isClosed()) throw new IOException("Connection is closed");
                 return new GcfSocketConnection(server.accept(), Connector.READ_WRITE, timeouts);
@@ -227,7 +227,7 @@ final class GcfNetwork {
         public String getLocalAddress() { return server.getInetAddress().getHostAddress(); }
         public int getLocalPort() { return server.getLocalPort(); }
 
-        public synchronized void close() {
+        public void close() {
             if (closed) return;
             closed = true;
             try { server.close(); } catch (IOException ignored) { }
@@ -320,7 +320,7 @@ final class GcfNetwork {
         private final DatagramSocket socket;
         private final String defaultAddress;
         private final int mode;
-        private boolean closed;
+        private volatile boolean closed;
 
         GcfDatagramConnection(String address, int mode) throws IOException {
             Endpoint endpoint = endpoint(address, "datagram");
@@ -349,7 +349,7 @@ final class GcfNetwork {
             datagram.setAddress(address);
             return datagram;
         }
-        public synchronized void send(Datagram datagram) {
+        public void send(Datagram datagram) {
             try {
                 ensureOpen();
                 if ((mode & Connector.WRITE) == 0) throw new IOException("Connection is not writable");
@@ -365,7 +365,7 @@ final class GcfNetwork {
                 socket.send(packet);
             } catch (IOException e) { throw new IllegalStateException(e.toString()); }
         }
-        public synchronized void receive(Datagram datagram) {
+        public void receive(Datagram datagram) {
             try {
                 ensureOpen();
                 if ((mode & Connector.READ) == 0) throw new IOException("Connection is not readable");
@@ -383,7 +383,7 @@ final class GcfNetwork {
                 data.setAddress("datagram://" + host + ":" + packet.getPort());
             } catch (IOException e) { throw new IllegalStateException(e.toString()); }
         }
-        public synchronized void close() {
+        public void close() {
             if (closed) return;
             closed = true;
             socket.close();
