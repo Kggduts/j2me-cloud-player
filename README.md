@@ -33,6 +33,7 @@ No universal compatibility claim is made. Vendor APIs, device-specific extension
 - Browser HTTP(S) diagnostic: available under `site/netprobe/`.
 - Local HTTP/TCP/UDP echo server and automated tests: available under `tools/`.
 - Java SE HTTP/TCP/UDP smoke-test client: `tools/java-probe/` (not a MIDlet/GCF test).
+- Java ME GCF diagnostic MIDlet source: `tools/java-me-probe/`; packaged as `dist/netprobe-midlet.jar` during the emulator build.
 - Static quality workflow: `.github/workflows/quality.yml`.
 - Pinned FreeJ2ME Web source and reproducible build workflow: configured; first successful CI build pending.
 - MIDP GCF networking: not implemented.
@@ -63,6 +64,7 @@ See:
 - [Security model](docs/security-model.md)
 - [MIDlet network probe specification](web/netprobe/README.md)
 - [Java SE transport probe](tools/java-probe/README.md)
+- [Java ME GCF probe](tools/java-me-probe/README.md)
 - [Project landing page](site/index.html)
 - [Browser HTTP(S) diagnostic](site/netprobe/index.html)
 
