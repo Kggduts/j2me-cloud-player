@@ -35,6 +35,11 @@ public final class GcfAdapterSmokeTest {
         drain(get.openInputStream());
         get.close();
 
+        HttpConnection status = (HttpConnection) Connector.open(
+            "http://" + host + ":" + port + "/status/418", Connector.READ, true);
+        require(status.getResponseCode() == 418, "GCF HTTP non-2xx status");
+        status.close();
+
         HttpConnection post = (HttpConnection) Connector.open(
             "http://" + host + ":" + port + "/echo", Connector.READ_WRITE, true);
         post.setRequestMethod(HttpConnection.POST);
