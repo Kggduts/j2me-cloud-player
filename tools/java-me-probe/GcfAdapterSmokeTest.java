@@ -66,13 +66,14 @@ public final class GcfAdapterSmokeTest {
     private static void testUdp(String host, int port) throws Exception {
         DatagramConnection connection = (DatagramConnection) Connector.open(
             "datagram://" + host + ":" + port, Connector.READ_WRITE, true);
-        Datagram request = connection.newDatagram(DATA, DATA.length);
+        Datagram request = connection.newDatagram(256);
+        request.write(DATA);
         connection.send(request);
         Datagram response = connection.newDatagram(256);
         connection.receive(response);
-        byte[] received = new byte[response.getLength()];
-        System.arraycopy(response.getData(), response.getOffset(), received, 0, response.getLength());
-        require(Arrays.equals(DATA, received), "GCF UDP binary datagram");
+        byte[] received = new byte[DATA.length];
+        response.readFully(received);
+        require(Arrays.equals(DATA, received), "GCF UDP DataInput/DataOutput binary datagram");
         connection.close();
         System.out.println("PASS: GCF UDP binary datagram");
     }
