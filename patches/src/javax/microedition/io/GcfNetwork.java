@@ -19,6 +19,7 @@ import java.net.HttpURLConnection;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.ServerSocket;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.SocketException;
@@ -37,6 +38,7 @@ final class GcfNetwork {
         String lower = name.toLowerCase();
         if (lower.startsWith("http://")) return new GcfHttpConnection(name, mode, timeouts);
         if (lower.startsWith("https://")) return new GcfHttpsConnection(name, mode, timeouts);
+        if (lower.startsWith("serversocket://")) return new GcfServerSocketConnection(name, timeouts);
         if (lower.startsWith("socket://")) return new GcfSocketConnection(name, mode, timeouts);
         if (lower.startsWith("datagram://")) return new GcfDatagramConnection(name, mode);
         throw new ConnectionNotFoundException("Unsupported protocol: " + name);
@@ -196,6 +198,42 @@ final class GcfNetwork {
         public int getPort() { return url.getPort() >= 0 ? url.getPort() : 443; }
     }
 
+    private static final class GcfServerSocketConnection implements ServerSocketConnection {
+        private final ServerSocket server;
+        private final boolean timeouts;
+        private boolean closed;
+
+        GcfServerSocketConnection(String address, boolean timeouts) throws IOException {
+            Endpoint endpoint = endpoint(address, "serversocket");
+            server = new ServerSocket();
+            server.setReuseAddress(true);
+            InetSocketAddress bindAddress = endpoint.host.length() == 0
+                ? new InetSocketAddress(endpoint.port)
+                : new InetSocketAddress(endpoint.host, endpoint.port);
+            server.bind(bindAddress);
+            if (timeouts) server.setSoTimeout(DEFAULT_TIMEOUT_MS);
+            this.timeouts = timeouts;
+        }
+
+        public synchronized StreamConnection acceptAndOpen() {
+            try {
+                if (closed || server.isClosed()) throw new IOException("Connection is closed");
+                return new GcfSocketConnection(server.accept(), Connector.READ_WRITE, timeouts);
+            } catch (IOException e) {
+                throw new IllegalStateException(e.toString());
+            }
+        }
+
+        public String getLocalAddress() { return server.getInetAddress().getHostAddress(); }
+        public int getLocalPort() { return server.getLocalPort(); }
+
+        public synchronized void close() {
+            if (closed) return;
+            closed = true;
+            try { server.close(); } catch (IOException ignored) { }
+        }
+    }
+
     private static final class GcfSocketConnection implements SocketConnection {
         private final Socket socket;
         private final int mode;
@@ -208,7 +246,14 @@ final class GcfNetwork {
             if (endpoint.host.length() == 0) throw new IOException("Socket host is required");
             socket = new Socket();
             socket.connect(endpoint.socketAddress(), timeouts ? DEFAULT_TIMEOUT_MS : 0);
+            if (timeouts) socket.setSoTimeout(DEFAULT_TIMEOUT_MS);
             this.mode = mode;
+        }
+
+        GcfSocketConnection(Socket accepted, int mode, boolean timeouts) throws IOException {
+            this.socket = accepted;
+            this.mode = mode;
+            if (timeouts) socket.setSoTimeout(DEFAULT_TIMEOUT_MS);
         }
 
         private void ensureOpen() throws IOException {
