@@ -7,6 +7,8 @@ import javax.microedition.io.HttpConnection;
 import javax.microedition.io.StreamConnection;
 import javax.microedition.io.Datagram;
 import javax.microedition.io.DatagramConnection;
+import javax.microedition.lcdui.Choice;
+import javax.microedition.lcdui.ChoiceGroup;
 import javax.microedition.lcdui.Command;
 import javax.microedition.lcdui.CommandListener;
 import javax.microedition.lcdui.Display;
@@ -21,22 +23,33 @@ import javax.microedition.midlet.MIDlet;
  * javax.microedition.io implementation, not Java SE networking.
  */
 public final class GcfNetworkProbe extends MIDlet implements CommandListener {
+    private static final String VPS_HOST = "100.81.186.89";
     private final Form form = new Form("J2ME GCF Network Probe");
-    private final TextField host = new TextField("Host / IP", "127.0.0.1", 128, TextField.ANY);
+    private final StringItem hostDisplay = new StringItem("Host / IP", VPS_HOST);
+    private final ChoiceGroup hostChar = new ChoiceGroup("Character to insert",
+        Choice.POPUP, new String[] {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "."}, null);
     private final TextField httpPort = new TextField("HTTP port", "8765", 5, TextField.NUMERIC);
     private final TextField tcpPort = new TextField("TCP port", "8766", 5, TextField.NUMERIC);
     private final TextField udpPort = new TextField("UDP port", "8767", 5, TextField.NUMERIC);
-    private final StringItem result = new StringItem("Results", "Ready. Start the local probe server first.");
-    private final Command run = new Command("Run tests", Command.OK, 1);
-    private final Command exit = new Command("Exit", Command.EXIT, 2);
+    private final StringItem result = new StringItem("Results", "Ready. Start the probe server on the VPS.");
+    private final Command addChar = new Command("Insert", Command.ITEM, 1);
+    private final Command deleteChar = new Command("Delete", Command.ITEM, 2);
+    private final Command useVps = new Command("Use VPS IP", Command.ITEM, 3);
+    private final Command run = new Command("Run tests", Command.OK, 4);
+    private final Command exit = new Command("Exit", Command.EXIT, 5);
+    private String hostValue = VPS_HOST;
     private volatile boolean running;
 
     public GcfNetworkProbe() {
-        form.append(host);
+        form.append(hostDisplay);
+        form.append(hostChar);
         form.append(httpPort);
         form.append(tcpPort);
         form.append(udpPort);
         form.append(result);
+        form.addCommand(addChar);
+        form.addCommand(deleteChar);
+        form.addCommand(useVps);
         form.addCommand(run);
         form.addCommand(exit);
         form.setCommandListener(this);
@@ -53,8 +66,22 @@ public final class GcfNetworkProbe extends MIDlet implements CommandListener {
     public void commandAction(Command command, Displayable displayable) {
         if (command == exit) {
             notifyDestroyed();
+        } else if (command == addChar) {
+            if (hostValue.length() < 128) {
+                hostValue += hostChar.getString(hostChar.getSelectedIndex());
+                hostDisplay.setText(hostValue);
+            }
+        } else if (command == deleteChar) {
+            if (hostValue.length() > 0) {
+                hostValue = hostValue.substring(0, hostValue.length() - 1);
+                hostDisplay.setText(hostValue);
+            }
+        } else if (command == useVps) {
+            hostValue = VPS_HOST;
+            hostDisplay.setText(hostValue);
+            result.setText("VPS target selected: " + VPS_HOST);
         } else if (command == run && !running) {
-            final String target = host.getString().trim();
+            final String target = hostValue.trim();
             final int hp;
             final int tp;
             final int up;
