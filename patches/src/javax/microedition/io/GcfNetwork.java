@@ -137,14 +137,12 @@ final class GcfNetwork {
             return new DataOutputStream(openOutputStream());
         }
 
-        public synchronized void close() throws IOException {
+        public synchronized void close() {
             if (closed) return;
             closed = true;
-            IOException failure = null;
-            try { if (input != null) input.close(); } catch (IOException e) { failure = e; }
-            try { if (output != null) output.close(); } catch (IOException e) { if (failure == null) failure = e; }
+            try { if (input != null) input.close(); } catch (IOException ignored) { }
+            try { if (output != null) output.close(); } catch (IOException ignored) { }
             connection.disconnect();
-            if (failure != null) throw failure;
         }
 
         public String getEncoding() { return connection.getContentEncoding(); }
@@ -224,10 +222,10 @@ final class GcfNetwork {
         public synchronized DataOutputStream openDataOutputStream() throws IOException {
             return new DataOutputStream(openOutputStream());
         }
-        public synchronized void close() throws IOException {
+        public synchronized void close() {
             if (closed) return;
             closed = true;
-            socket.close();
+            try { socket.close(); } catch (IOException ignored) { }
         }
         public String getAddress() { return socket.getInetAddress().getHostAddress(); }
         public String getLocalAddress() { return socket.getLocalAddress().getHostAddress(); }
@@ -290,33 +288,37 @@ final class GcfNetwork {
             datagram.setAddress(address);
             return datagram;
         }
-        public synchronized void send(Datagram datagram) throws IOException {
-            ensureOpen();
-            if (!(datagram instanceof GcfDatagram)) throw new IOException("Datagram was not created by this implementation");
-            GcfDatagram data = (GcfDatagram) datagram;
-            String address = data.getAddress();
-            if (address == null) address = defaultAddress;
-            if (address == null) throw new IOException("Datagram destination is not set");
-            Endpoint endpoint = endpoint(address, "datagram");
-            InetAddress host = InetAddress.getByName(endpoint.host);
-            byte[] bytes = data.getData();
-            DatagramPacket packet = new DatagramPacket(bytes, data.getOffset(), data.getLength(), host, endpoint.port);
-            socket.send(packet);
+        public synchronized void send(Datagram datagram) {
+            try {
+                ensureOpen();
+                if (!(datagram instanceof GcfDatagram)) throw new IOException("Datagram was not created by this implementation");
+                GcfDatagram data = (GcfDatagram) datagram;
+                String address = data.getAddress();
+                if (address == null) address = defaultAddress;
+                if (address == null) throw new IOException("Datagram destination is not set");
+                Endpoint endpoint = endpoint(address, "datagram");
+                InetAddress host = InetAddress.getByName(endpoint.host);
+                byte[] bytes = data.getData();
+                DatagramPacket packet = new DatagramPacket(bytes, data.getOffset(), data.getLength(), host, endpoint.port);
+                socket.send(packet);
+            } catch (IOException e) { throw new IllegalStateException(e.toString()); }
         }
-        public synchronized void receive(Datagram datagram) throws IOException {
-            ensureOpen();
-            if (!(datagram instanceof GcfDatagram)) throw new IOException("Datagram was not created by this implementation");
-            GcfDatagram data = (GcfDatagram) datagram;
-            byte[] bytes = data.getData();
-            int offset = data.getOffset();
-            int capacity = data.getLength();
-            if (capacity <= 0) throw new IOException("Receive datagram must have a positive buffer length");
-            DatagramPacket packet = new DatagramPacket(bytes, offset, capacity);
-            socket.receive(packet);
-            data.setData(packet.getData(), packet.getOffset(), packet.getLength());
-            String host = packet.getAddress().getHostAddress();
-            if (host.indexOf(':') >= 0) host = "[" + host + "]";
-            data.setAddress("datagram://" + host + ":" + packet.getPort());
+        public synchronized void receive(Datagram datagram) {
+            try {
+                ensureOpen();
+                if (!(datagram instanceof GcfDatagram)) throw new IOException("Datagram was not created by this implementation");
+                GcfDatagram data = (GcfDatagram) datagram;
+                byte[] bytes = data.getData();
+                int offset = data.getOffset();
+                int capacity = data.getLength();
+                if (capacity <= 0) throw new IOException("Receive datagram must have a positive buffer length");
+                DatagramPacket packet = new DatagramPacket(bytes, offset, capacity);
+                socket.receive(packet);
+                data.setData(packet.getData(), packet.getOffset(), packet.getLength());
+                String host = packet.getAddress().getHostAddress();
+                if (host.indexOf(':') >= 0) host = "[" + host + "]";
+                data.setAddress("datagram://" + host + ":" + packet.getPort());
+            } catch (IOException e) { throw new IllegalStateException(e.toString()); }
         }
         public synchronized void close() {
             if (closed) return;
