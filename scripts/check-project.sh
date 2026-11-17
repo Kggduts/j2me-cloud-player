@@ -27,6 +27,9 @@ grep -Fq 'Testing TCP ' tools/java-me-probe/GcfNetworkProbe.java
 grep -Fq 'TCP ' tools/java-me-probe/GcfNetworkProbe.java
 grep -Fq 'UDP ' tools/java-me-probe/GcfNetworkProbe.java
 grep -Fq 'elapsed(started)' tools/java-me-probe/GcfNetworkProbe.java
+grep -Fq 'pointer-based multi-touch keypad' scripts/apply-upstream-patches.py
+grep -Fq 'data-key="Backspace"' scripts/apply-upstream-patches.py
+grep -Fq 'pointercancel' scripts/apply-upstream-patches.py
 
 node --check site/netprobe/netprobe.js
 bash -n scripts/build-emulator.sh
