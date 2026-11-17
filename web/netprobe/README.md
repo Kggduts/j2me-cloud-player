@@ -9,7 +9,8 @@ networking compatibility.
   `javax.microedition.io` GCF API in the emulator. Packaged as
   `dist/netprobe-midlet.jar`.
 - `tools/java-me-probe/GcfAdapterSmokeTest.java`: runs the project's GCF
-  adapters on a normal JVM against the local controlled server.
+  adapters on a normal JVM against the local controlled server, including a
+  `serversocket://` accept-and-echo test.
 - `tools/java-probe/NetworkProbe.java`: Java SE baseline using ordinary
   `java.net`, not GCF.
 - `site/netprobe/`: browser Fetch diagnostic; it does not test raw sockets.
@@ -44,7 +45,8 @@ the pinned FreeJ2ME Web checkout by `scripts/apply-upstream-patches.py`.
 - Java ME `SecurityInfo` behavior (currently not implemented)
 
 ### TCP
-- Connect and report connection failure
+- Client connect and report connection failure
+- Server-socket bind and accept
 - Bidirectional stream echo
 - Partial reads and writes
 - Binary payload integrity
