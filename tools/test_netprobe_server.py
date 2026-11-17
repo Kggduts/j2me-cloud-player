@@ -48,7 +48,7 @@ class NetworkProbeServerTests(unittest.TestCase):
         url = f"http://127.0.0.1:{self.http.server_address[1]}/echo"
         request = urllib.request.Request(
             url,
-            data=b"\\x00binary\\xff",
+            data=b"\x00binary\xff",
             headers={
                 "Content-Type": "application/octet-stream",
                 "Origin": "https://test.example",
@@ -56,7 +56,7 @@ class NetworkProbeServerTests(unittest.TestCase):
             method="POST",
         )
         with urllib.request.urlopen(request, timeout=3) as response:
-            self.assertEqual(response.read(), b"\\x00binary\\xff")
+            self.assertEqual(response.read(), b"\x00binary\xff")
             self.assertEqual(
                 response.headers.get("Access-Control-Allow-Origin"),
                 "https://test.example",
