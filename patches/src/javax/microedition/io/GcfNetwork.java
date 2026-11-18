@@ -30,18 +30,65 @@ final class GcfNetwork {
 
     private GcfNetwork() { }
 
+    /*
+     * Network diagnostics are written to Java stderr (the browser developer
+     * console in CheerpJ). Never log URL paths, query strings, payloads or
+     * credentials; only protocol, destination host/port, timing and errors.
+     */
+    private static void netLog(String message) {
+        System.err.println("[J2ME-NET] " + System.currentTimeMillis() + " " + message);
+    }
+
+    private static String safeTarget(String name) {
+        try {
+            String lower = name.toLowerCase();
+            if (lower.startsWith("http://") || lower.startsWith("https://")) {
+                URL url = new URL(name);
+                int port = url.getPort();
+                if (port < 0) port = lower.startsWith("https://") ? 443 : 80;
+                return url.getProtocol().toUpperCase() + " " + url.getHost() + ":" + port;
+            }
+            String scheme = lower.startsWith("serversocket://") ? "serversocket"
+                : lower.startsWith("socket://") ? "socket"
+                : lower.startsWith("datagram://") ? "datagram" : null;
+            if (scheme != null) {
+                Endpoint ep = endpoint(name, scheme);
+                return scheme.toUpperCase() + " " + (ep.host.length() == 0 ? "0.0.0.0" : ep.host) + ":" + ep.port;
+            }
+        } catch (Throwable ignored) { }
+        return "UNKNOWN";
+    }
+
     static Connection open(String name, int mode, boolean timeouts) throws IOException {
         if (name == null) throw new IllegalArgumentException("Connection name is null");
         if (mode != Connector.READ && mode != Connector.WRITE && mode != Connector.READ_WRITE) {
             throw new IllegalArgumentException("Invalid connection mode: " + mode);
         }
         String lower = name.toLowerCase();
-        if (lower.startsWith("http://")) return new GcfHttpConnection(name, mode, timeouts);
-        if (lower.startsWith("https://")) return new GcfHttpsConnection(name, mode, timeouts);
-        if (lower.startsWith("serversocket://")) return new GcfServerSocketConnection(name, timeouts);
-        if (lower.startsWith("socket://")) return new GcfSocketConnection(name, mode, timeouts);
-        if (lower.startsWith("datagram://")) return new GcfDatagramConnection(name, mode, timeouts);
-        throw new ConnectionNotFoundException("Unsupported protocol: " + name);
+        String target = safeTarget(name);
+        long started = System.currentTimeMillis();
+        try {
+            Connection result;
+            if (lower.startsWith("http://")) result = new GcfHttpConnection(name, mode, timeouts);
+            else if (lower.startsWith("https://")) result = new GcfHttpsConnection(name, mode, timeouts);
+            else if (lower.startsWith("serversocket://")) result = new GcfServerSocketConnection(name, timeouts);
+            else if (lower.startsWith("socket://")) result = new GcfSocketConnection(name, mode, timeouts);
+            else if (lower.startsWith("datagram://")) result = new GcfDatagramConnection(name, mode, timeouts);
+            else throw new ConnectionNotFoundException("Unsupported protocol: " + name);
+            netLog("OPEN_OK " + target + " mode=" + mode + " elapsedMs=" +
+                (System.currentTimeMillis() - started));
+            return result;
+        } catch (IOException e) {
+            netLog("OPEN_FAIL " + target + " elapsedMs=" +
+                (System.currentTimeMillis() - started) + " error=" + e.getClass().getName() +
+                ": " + e.getMessage());
+            throw e;
+        } catch (RuntimeException e) {
+            netLog("OPEN_FAIL " + target + " elapsedMs=" +
+                (System.currentTimeMillis() - started) + " error=" + e.getClass().getName() +
+                ": " + e.getMessage());
+            throw e;
+        }
     }
 
     private static Endpoint endpoint(String value, String scheme) throws IOException {
