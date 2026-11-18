@@ -66,3 +66,26 @@ The JVM smoke test verifies adapter mapping and byte preservation; it does not p
 - **Production-ready:** authentication, ACLs, abuse limits, observability, deployment, and lifecycle behavior are reviewed.
 
 Until the applicable gate is met, label the feature experimental or unsupported.
+
+
+## Runtime network diagnostics
+
+The GCF adapter emits safe connection-open diagnostics to Java standard error,
+which CheerpJ exposes in the browser developer console. Filter for
+`[J2ME-NET]` while reproducing a connection attempt in the game.
+
+Each record includes a timestamp, protocol, destination host and port,
+connection mode, elapsed time, and (on failure) exception class/message.
+URL paths, query strings, credentials, and packet payloads are deliberately
+excluded. Records use `OPEN_OK` or `OPEN_FAIL`.
+
+To investigate a game connection failure:
+
+1. Open the player in a desktop browser or remote-debug the mobile browser.
+2. Open the browser developer console and clear existing messages.
+3. Launch the JAR, reproduce the failure by pressing Play / selecting a server.
+4. Filter console output for `[J2ME-NET]` and capture the surrounding error.
+5. Share the records and the approximate time of the failed attempt.
+
+A successful `OPEN_OK` means the transport connection was established; it does
+not prove that the game server accepted the game protocol or login exchange.
