@@ -33,6 +33,9 @@ grep -Fq 'pointercancel' scripts/apply-upstream-patches.py
 grep -Fq 'OPEN_OK ' patches/src/javax/microedition/io/GcfNetwork.java
 grep -Fq 'OPEN_FAIL ' patches/src/javax/microedition/io/GcfNetwork.java
 grep -Fq '[J2ME-NET]' patches/src/javax/microedition/io/GcfNetwork.java
+grep -Fq 'on-screen network diagnostics' scripts/apply-upstream-patches.py
+grep -Fq 'j2me-netlog-copy' scripts/apply-upstream-patches.py
+grep -Fq 'j2me-netlog-output' scripts/apply-upstream-patches.py
 
 node --check site/netprobe/netprobe.js
 bash -n scripts/build-emulator.sh
