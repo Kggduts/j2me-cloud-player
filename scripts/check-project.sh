@@ -30,6 +30,9 @@ grep -Fq 'elapsed(started)' tools/java-me-probe/GcfNetworkProbe.java
 grep -Fq 'pointer-based multi-touch keypad' scripts/apply-upstream-patches.py
 grep -Fq 'data-key="Backspace"' scripts/apply-upstream-patches.py
 grep -Fq 'pointercancel' scripts/apply-upstream-patches.py
+grep -Fq 'OPEN_OK ' patches/src/javax/microedition/io/GcfNetwork.java
+grep -Fq 'OPEN_FAIL ' patches/src/javax/microedition/io/GcfNetwork.java
+grep -Fq '[J2ME-NET]' patches/src/javax/microedition/io/GcfNetwork.java
 
 node --check site/netprobe/netprobe.js
 bash -n scripts/build-emulator.sh
