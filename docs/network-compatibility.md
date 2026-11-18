@@ -81,11 +81,15 @@ excluded. Records use `OPEN_OK` or `OPEN_FAIL`.
 
 To investigate a game connection failure:
 
-1. Open the player in a desktop browser or remote-debug the mobile browser.
-2. Open the browser developer console and clear existing messages.
-3. Launch the JAR, reproduce the failure by pressing Play / selecting a server.
-4. Filter console output for `[J2ME-NET]` and capture the surrounding error.
-5. Share the records and the approximate time of the failed attempt.
+1. Open the player on the phone and launch the JAR.
+2. Reproduce the failure by pressing Play / selecting a server.
+3. Tap the **Network Log** button at the bottom-right of the emulator page.
+4. Tap **Sao chép log** and paste the result into the support conversation.
+5. If copying is unavailable, tap the text area, long-press, select all, and copy.
+
+The same records remain available in the desktop browser developer console under
+`[J2ME-NET]`. The in-page panel captures only those tagged records and keeps
+the latest 400 lines in memory; it does not upload logs automatically.
 
 A successful `OPEN_OK` means the transport connection was established; it does
 not prove that the game server accepted the game protocol or login exchange.
