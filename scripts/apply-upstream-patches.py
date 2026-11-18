@@ -201,4 +201,95 @@ if "grid-template-rows: repeat(5, 1fr);" not in html:
     if needle not in html:
         raise SystemExit("Expected left keypad CSS anchor not found in upstream run.html")
     html = html.replace(needle, replacement, 1)
+
+# J2ME Cloud Player: capture safe network diagnostics in-page for mobile users.
+mobile_log_marker = '<!-- J2ME Cloud Player: on-screen network diagnostics -->'
+if mobile_log_marker not in html:
+    mobile_log = r"""
+    <!-- J2ME Cloud Player: on-screen network diagnostics -->
+    <style>
+      #j2me-netlog-toggle{position:fixed;z-index:10020;right:10px;bottom:10px;border:0;border-radius:22px;padding:10px 14px;background:#173b67;color:#fff;font:600 14px sans-serif;box-shadow:0 2px 8px #0005}
+      #j2me-netlog-panel{position:fixed;z-index:10021;inset:auto 8px 58px 8px;max-height:55vh;background:#101820;color:#e8f0f7;border:1px solid #526273;border-radius:10px;padding:10px;font:13px sans-serif;box-shadow:0 3px 16px #0008}
+      #j2me-netlog-panel[hidden]{display:none}
+      #j2me-netlog-output{box-sizing:border-box;width:100%;height:30vh;resize:vertical;background:#080d12;color:#b9f6ca;border:1px solid #526273;border-radius:6px;padding:8px;font:11px monospace}
+      #j2me-netlog-panel button{border:0;border-radius:6px;padding:9px 12px;margin:6px 5px 0 0;background:#285b87;color:white;font-weight:600}
+      #j2me-netlog-panel .muted{color:#b7c4d0;font-size:12px}
+    </style>
+    <button id="j2me-netlog-toggle" type="button" aria-expanded="false">Network Log <span id="j2me-netlog-count">0</span></button>
+    <section id="j2me-netlog-panel" hidden aria-label="Network debug log">
+      <strong>Network Debug Log</strong>
+      <p class="muted">Chỉ lưu các dòng [J2ME-NET]. Không ghi nội dung gói tin hoặc mật khẩu.</p>
+      <textarea id="j2me-netlog-output" readonly spellcheck="false" placeholder="Chưa có log. Hãy mở game và thử kết nối lại."></textarea>
+      <div>
+        <button id="j2me-netlog-copy" type="button">Sao chép log</button>
+        <button id="j2me-netlog-clear" type="button">Xóa log</button>
+        <button id="j2me-netlog-close" type="button">Đóng</button>
+        <span id="j2me-netlog-status" class="muted" aria-live="polite"></span>
+      </div>
+    </section>
+    <script>
+    (() => {
+      const lines = [];
+      const limit = 400;
+      const output = document.getElementById('j2me-netlog-output');
+      const count = document.getElementById('j2me-netlog-count');
+      const panel = document.getElementById('j2me-netlog-panel');
+      const toggle = document.getElementById('j2me-netlog-toggle');
+      const status = document.getElementById('j2me-netlog-status');
+      const original = {
+        log: console.log.bind(console),
+        warn: console.warn.bind(console),
+        error: console.error.bind(console)
+      };
+      function stringify(value) {
+        if (typeof value === 'string') return value;
+        try { return JSON.stringify(value); } catch (_) { return String(value); }
+      }
+      function capture(args) {
+        const line = Array.from(args, stringify).join(' ');
+        if (!line.includes('[J2ME-NET]')) return;
+        lines.push(line.slice(0, 1200));
+        if (lines.length > limit) lines.shift();
+        output.value = lines.join('\n');
+        count.textContent = String(lines.length);
+        if (!panel.hidden) output.scrollTop = output.scrollHeight;
+      }
+      ['log', 'warn', 'error'].forEach(level => {
+        console[level] = (...args) => {
+          capture(args);
+          original[level](...args);
+        };
+      });
+      function setOpen(open) {
+        panel.hidden = !open;
+        toggle.setAttribute('aria-expanded', String(open));
+        if (open) output.scrollTop = output.scrollHeight;
+      }
+      toggle.addEventListener('click', () => setOpen(panel.hidden));
+      document.getElementById('j2me-netlog-close').addEventListener('click', () => setOpen(false));
+      document.getElementById('j2me-netlog-clear').addEventListener('click', () => {
+        lines.length = 0; output.value = ''; count.textContent = '0'; status.textContent = 'Đã xóa.';
+      });
+      document.getElementById('j2me-netlog-copy').addEventListener('click', async () => {
+        const value = lines.join('\n');
+        if (!value) { status.textContent = 'Chưa có log để sao chép.'; return; }
+        try {
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            await navigator.clipboard.writeText(value);
+          } else {
+            output.focus(); output.select();
+            if (!document.execCommand('copy')) throw new Error('copy unavailable');
+          }
+          status.textContent = 'Đã sao chép ' + lines.length + ' dòng.';
+        } catch (_) {
+          output.focus(); output.select();
+          status.textContent = 'Đã chọn log. Nhấn giữ và chọn Sao chép.';
+        }
+      });
+    })();
+    </script>
+    """
+    if "</body>" not in html:
+        raise SystemExit("Expected closing body tag not found in upstream run.html")
+    html = html.replace("</body>", mobile_log + "\n</body>", 1)
 run_html.write_text(html, encoding="utf-8")
